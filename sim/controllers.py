@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
 
-from modular_laps_sim.config import RaceConfig
+from sim.config import RaceConfig
 
 
 # Build target SOC trajectory from start_soc to target_soc.

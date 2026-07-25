@@ -13,12 +13,12 @@ Usage:
 """
 import numpy as np
 
-from modular_laps_sim.config import (
+from sim.config import (
     CarConfig, RaceConfig, get_available_tracks,
 )
-from modular_laps_sim.controllers import PIControllerStrategy
-from modular_laps_sim.physics import PhysicsEngine
-from modular_laps_sim.weather import WeatherService
+from sim.controllers import PIControllerStrategy
+from sim.physics import PhysicsEngine
+from sim.weather import WeatherService
 
 
 class InteractiveSimulator:

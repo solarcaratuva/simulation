@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scipy.stats import energy_distance
 
-from config import CarConfig, RaceConfig, get_available_tracks
+from sim.config import CarConfig, RaceConfig, get_available_tracks
 from simulator import LapsRaceSimulator
 from reporting import ResultsReporter
 from plotting import SimulationPlotter, save_all_plots

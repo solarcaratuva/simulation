@@ -1,4 +1,4 @@
-from config import SimulationResults
+from sim.config import SimulationResults
 from physics import PhysicsEngine
 from weather import WeatherService
 from controllers import build_strategy
