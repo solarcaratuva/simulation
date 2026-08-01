@@ -8,20 +8,16 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from scipy.stats import energy_distance
 
 from sim.config import CarConfig, RaceConfig, get_available_tracks
-from simulator import LapsRaceSimulator
-from reporting import ResultsReporter
-from plotting import SimulationPlotter, save_all_plots
-
-
-DEFAULT_AGGRESSIVENESS = {
-    "pi": 1.5,
-    "stepped": 1.2,
-    "interval-hold": 1.0,
-    "fixed": 1.0,
-}
+from sim.planning.sweep import (
+    DEFAULT_AGGRESSIVENESS,
+    SPEED_SWEEP_MPH,
+    run_fixed_speed_sweep,
+)
+from sim.simulator import LapsRaceSimulator
+from sim.reporting import ResultsReporter
+from sim.plotting import SimulationPlotter, save_all_plots
 
 STRATEGY_OPTIONS = ["pi", "stepped", "interval-hold", "fixed"]
-SPEED_SWEEP_MPH = list(range(10, 47, 2))
 
 
 def parse_args():
@@ -72,8 +68,6 @@ def run_speed_sweep(track, car, args):
     print(f"  Track: {track.name}")
     print(f"  Location: {track.location}")
 
-    rows = []
-
     def fmt_elapsed(minute_of_day: float, start_time_hour: float) -> str:
         elapsed_min = minute_of_day - (start_time_hour * 60.0)
         elapsed_min = max(0.0, elapsed_min)
@@ -84,45 +78,33 @@ def run_speed_sweep(track, car, args):
             hours += 1
         return f"{hours}h {minutes:02d}m"
 
-    for mph in SPEED_SWEEP_MPH:
-        mps = mph / 2.237
-        race = RaceConfig(
-            start_soc=1.0,
-            target_soc=0.10,
-            aggressiveness=DEFAULT_AGGRESSIVENESS["fixed"],
-            fixed_speed_mps=mps,
-            time_step_minutes=1.0,
-            strategy="fixed",
-        )
-
-        simulator = LapsRaceSimulator(
-            track=track,
-            car=car,
-            race=race,
-            use_api_weather=True,
-        )
-        results = simulator.run()
-        rows.append(
-            {
-                "mph": mph,
-                "final_soc": results.final_soc * 100.0,
-                "laps": results.total_laps,
-                "miles": results.total_distance_miles,
-                "cutoff": (
-                    "Full 8h"
-                    if results.completed_full_window
-                    else fmt_elapsed(results.reached_min_soc_time_minutes, race.start_time_hour)
-                ),
-            }
-        )
+    base_race = RaceConfig(
+        start_soc=1.0,
+        target_soc=0.10,
+        aggressiveness=DEFAULT_AGGRESSIVENESS["fixed"],
+        time_step_minutes=1.0,
+        strategy="fixed",
+    )
+    rows = run_fixed_speed_sweep(
+        track=track,
+        car=car,
+        base_race=base_race,
+        speeds_mph=SPEED_SWEEP_MPH,
+        use_api_weather=True,
+    )
 
     print("\nSpeed sweep summary")
     print("  Speed (mph) | Final SoC (%) | Laps | Distance (mi) | 10% reached at")
     print("  ----------- | ------------- | ---- | ------------- | --------------")
     for row in rows:
+        cutoff = (
+            "Full 8h"
+            if row["completed_full_window"]
+            else fmt_elapsed(row["reached_min_soc_time_minutes"], base_race.start_time_hour)
+        )
         print(
-            f"  {row['mph']:>11.0f} | {row['final_soc']:>13.1f} |"
-            f" {row['laps']:>4} | {row['miles']:>13.1f} | {row['cutoff']:>11}"
+            f"  {row['mph']:>11.0f} | {row['final_soc_pct']:>13.1f} |"
+            f" {row['laps']:>4} | {row['distance_miles']:>13.1f} | {cutoff:>11}"
         )
 
 

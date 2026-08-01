@@ -1,7 +1,7 @@
 from sim.config import SimulationResults
-from physics import PhysicsEngine
-from weather import WeatherService
-from controllers import build_strategy
+from sim.physics import PhysicsEngine
+from sim.weather import WeatherService
+from sim.controllers import build_strategy
 import numpy as np
 
 

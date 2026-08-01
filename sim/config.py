@@ -114,7 +114,30 @@ class SimulationResults:
     @property
     def final_soc(self) -> float:
         return float(self.soc[-1])
+    
+    @property
+    def final_soc_pct(self) -> float:
+        return self.final_soc * 100.0
 
+    @property
+    def min_soc(self) -> float:
+        return float(np.min(self.soc))
+
+    @property
+    def min_soc_pct(self) -> float:
+        return self.min_soc * 100.0
+
+    @property
+    def hit_min_soc(self) -> bool:
+        return not self.completed_full_window
+
+    @property
+    def max_speed_mph(self) -> float:
+        return float(np.max(self.speed)) * 2.237
+
+    @property
+    def min_speed_mph(self) -> float:
+        return float(np.min(self.speed)) * 2.237
 
 def get_available_tracks() -> List[TrackConfig]:
     return [
