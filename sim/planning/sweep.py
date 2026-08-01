@@ -1,5 +1,7 @@
 from dataclasses import replace
 
+import numpy as np
+
 from sim.planning.comparison import build_comparison_row
 from sim.simulator import LapsRaceSimulator
 
@@ -22,6 +24,7 @@ def run_fixed_speed_sweep(
     base_race,
     speeds_mph: list[int],
     use_api_weather: bool = True,
+    synthetic_weather_seed: int = 7,
 ) -> list[dict]:
     rows = []
 
@@ -39,6 +42,7 @@ def run_fixed_speed_sweep(
             race=race,
             use_api_weather=use_api_weather,
         )
+        np.random.seed(synthetic_weather_seed)
         results = simulator.run()
 
         row = build_comparison_row(
@@ -64,6 +68,7 @@ def run_strategy_sweep(
     strategies: list[str],
     aggressiveness_by_strategy: dict[str, float],
     use_api_weather: bool = True,
+    synthetic_weather_seed: int = 7,
 ) -> list[dict]:
     rows = []
 
@@ -80,6 +85,7 @@ def run_strategy_sweep(
             race=race,
             use_api_weather=use_api_weather,
         )
+        np.random.seed(synthetic_weather_seed)
         results = simulator.run()
         rows.append(build_comparison_row(strategy, race, results, study="strategy"))
 

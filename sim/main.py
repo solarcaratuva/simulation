@@ -5,14 +5,14 @@ from pathlib import Path
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from scipy.stats import energy_distance
-
 from sim.config import CarConfig, RaceConfig, get_available_tracks
 from sim.planning.sweep import (
     DEFAULT_AGGRESSIVENESS,
     SPEED_SWEEP_MPH,
     run_fixed_speed_sweep,
+    run_strategy_sweep,
 )
+from sim.planning.report import print_planning_report
 from sim.simulator import LapsRaceSimulator
 from sim.reporting import ResultsReporter
 from sim.plotting import SimulationPlotter, save_all_plots
@@ -44,6 +44,11 @@ def parse_args():
         "--speed-sweep",
         action="store_true",
         help="Run fixed-speed sweeps and print summary results",
+    )
+    parser.add_argument(
+        "--plan",
+        action="store_true",
+        help="Run pre-race planning study with fixed-speed and strategy comparisons",
     )
     return parser.parse_args()
 
@@ -124,7 +129,7 @@ def main():
     print("Choose a track to test on:")
     for i in range(len(tracks)):
         print(f"({i+1}) {tracks[i].name}")
-    num = 0
+    num = 1
     while True:
         inp = input()
         if inp.isdigit():
@@ -137,6 +142,38 @@ def main():
             break
 
     track = tracks[num-1]
+
+    if args.plan:
+        base_race = RaceConfig(
+            start_soc=1.0,
+            target_soc=0.10,
+            aggressiveness=DEFAULT_AGGRESSIVENESS["interval-hold"],
+            energy_safety_scale=1.0,
+            initial_speed_mps=20.0,
+            time_step_minutes=1.0,
+            strategy="interval-hold",
+        )
+        fixed_speed_rows = run_fixed_speed_sweep(
+            track=track,
+            car=car,
+            base_race=base_race,
+            speeds_mph=SPEED_SWEEP_MPH,
+            use_api_weather=True,
+        )
+        strategy_rows = run_strategy_sweep(
+            track=track,
+            car=car,
+            base_race=base_race,
+            strategies=STRATEGY_OPTIONS,
+            aggressiveness_by_strategy=DEFAULT_AGGRESSIVENESS,
+            use_api_weather=True,
+        )
+        print_planning_report(
+            track=track,
+            fixed_speed_rows=fixed_speed_rows,
+            strategy_rows=strategy_rows,
+        )
+        return
 
     if args.speed_sweep:
         run_speed_sweep(track, car, args)

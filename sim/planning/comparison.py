@@ -1,5 +1,12 @@
-def build_comparison_row(strategy, race, results, label=None, study=None):
-    return {
+def build_comparison_row(
+    strategy,
+    race,
+    results,
+    label=None,
+    study=None,
+    metadata=None,
+):
+    row = {
         "study": study,
         "label": label or strategy,
         "strategy": strategy,
@@ -14,6 +21,10 @@ def build_comparison_row(strategy, race, results, label=None, study=None):
         "completed_full_window": results.completed_full_window,
         "hit_min_soc": results.hit_min_soc,
     }
+    if metadata:
+        row["metadata"] = metadata
+    return row
+
 
 def sort_planning_rows(rows: list[dict]) -> list[dict]:
     return sorted(
