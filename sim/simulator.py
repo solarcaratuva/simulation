@@ -81,6 +81,7 @@ class LapsRaceSimulator:
             total_distance += distance_step
             current_lap_distance += distance_step
 
+            # fix lap counting here
             if current_lap_distance >= self.track.lap_distance_m and speed > 0:
                 total_laps += 1
                 lap_time = (time_minutes[i] + dt_minutes * step_fraction) - lap_start_time
