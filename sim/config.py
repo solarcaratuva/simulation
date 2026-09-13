@@ -80,11 +80,17 @@ class CarConfig:
 @dataclass
 class RaceConfig:
     start_time_hour: float = 10.0
+    end_time_hour: float = 18.0
     start_soc: float = 1.0
-    target_soc: float = 0.8
-    min_soc: float = 0.2
-    max_speed_mps: float = 30.0
-    min_speed_mps: float = 10.0
+    target_soc: float = 0.10
+    min_soc: float = 0.10
+    aggressiveness: float = 1.2
+    energy_safety_scale: float = 1.0
+    initial_speed_mps: float = 20.0
+    fixed_speed_mps: float = 15.0
+    max_speed_mps: float = 35.0
+    min_speed_mps: float = 4.0
+    strategy: str = "pi"
     time_step_minutes: float = 1.0
 
     def __post_init__(self):
@@ -103,6 +109,14 @@ class RaceConfig:
             raise ValueError("Max speed must be greater than min speed.")
         if self.time_step_minutes <= 0:
             raise ValueError("Time step must be greater than 0.")
+        if self.initial_speed_mps < self.min_speed_mps or self.initial_speed_mps > self.max_speed_mps:
+            raise ValueError("Initial speed must be between min and max speed.")
+        if self.fixed_speed_mps < self.min_speed_mps or self.fixed_speed_mps > self.max_speed_mps:
+            raise ValueError("Fixed speed must be between min and max speed.")
+        if self.aggressiveness <= 0:
+            raise ValueError("Aggressiveness must be greater than 0.")
+        if self.energy_safety_scale <= 0:
+            raise ValueError("Energy safety scale must be greater than 0.")
 
 
 @dataclass
