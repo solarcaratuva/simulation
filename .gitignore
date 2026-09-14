@@ -222,4 +222,7 @@ lap_sim_plots/*
 plots/*
 
 .idea
-venv
+venv.
+.codex
+.agents
+.vscode
