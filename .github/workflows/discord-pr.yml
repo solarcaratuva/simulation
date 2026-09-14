@@ -1,0 +1,137 @@
+name: Discord PR Notification
+
+on:
+  pull_request:
+    types:
+      - opened
+      - ready_for_review
+
+jobs:
+  discord-notification:
+    # Normal PR:
+    #   Notify when opened.
+    #
+    # Draft PR:
+    #   Don't notify until "Ready for review" is clicked.
+    if: >
+      github.event.action == 'ready_for_review' ||
+      (github.event.action == 'opened' && github.event.pull_request.draft == false)
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create Discord forum post
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_PR_WEBHOOK }}
+          DISCORD_ROLE_ID: ${{ secrets.DISCORD_PR_REVIEW_ROLE }}
+
+          REPOSITORY: ${{ github.repository }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          REPO_URL: ${{ github.event.repository.html_url }}
+
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_AUTHOR_AVATAR: ${{ github.event.pull_request.user.avatar_url }}
+
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+
+          ADDITIONS: ${{ github.event.pull_request.additions }}
+          DELETIONS: ${{ github.event.pull_request.deletions }}
+          CHANGED_FILES: ${{ github.event.pull_request.changed_files }}
+
+        run: |
+          python3 <<'PY'
+          import json
+          import os
+          import re
+          import urllib.request
+
+          repo = os.environ["REPO_NAME"]
+          repo_url = os.environ["REPO_URL"]
+
+          number = os.environ["PR_NUMBER"]
+          title = os.environ["PR_TITLE"]
+          url = os.environ["PR_URL"]
+          body = os.environ.get("PR_BODY", "") or ""
+
+          author = os.environ["PR_AUTHOR"]
+          avatar = os.environ["PR_AUTHOR_AVATAR"]
+
+          head = os.environ["HEAD_BRANCH"]
+          base = os.environ["BASE_BRANCH"]
+
+          additions = os.environ["ADDITIONS"]
+          deletions = os.environ["DELETIONS"]
+          changed_files = os.environ["CHANGED_FILES"]
+
+          role = os.environ["DISCORD_ROLE_ID"]
+          webhook = os.environ["DISCORD_WEBHOOK"]
+
+          # Find things like:
+          # Closes #64
+          # Fixes #64
+          # Resolves #64
+          issue_match = re.search(
+              r'(?i)(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)',
+              body
+          )
+
+          if issue_match:
+              issue_number = issue_match.group(1)
+              issue = f"[#{issue_number}]({repo_url}/issues/{issue_number})"
+          else:
+              issue = "Not linked"
+
+          # Discord forum post names max out at 100 characters.
+          thread_name = f"[{repo} #{number}] {title}"[:100]
+
+          description = (
+              f"**Author:** [{author}](https://github.com/{author})\n"
+              f"**Branch:** `{head}` → `{base}`\n"
+              f"**Changes:** +{additions} / -{deletions} • {changed_files} files\n"
+              f"**Related issue:** {issue}\n\n"
+              f"[**Open PR**]({url})"
+              f" • [Files changed]({url}/files)"
+              f" • [Checks]({url}/checks)"
+          )
+
+          payload = {
+              "thread_name": thread_name,
+
+              # This is what actually causes the Discord notification.
+              "content": f"<@&{role}> — new PR ready for review",
+
+              # Prevent anything except our intended role mention.
+              "allowed_mentions": {
+                  "roles": [role],
+                  "parse": []
+              },
+
+              "embeds": [{
+                  "title": f"🔀 {title}",
+                  "url": url,
+                  "description": description,
+                  "author": {
+                      "name": author,
+                      "icon_url": avatar
+                  }
+              }]
+          }
+
+          data = json.dumps(payload).encode("utf-8")
+
+          request = urllib.request.Request(
+              webhook + "?wait=true",
+              data=data,
+              headers={"Content-Type": "application/json"},
+              method="POST",
+          )
+
+          with urllib.request.urlopen(request) as response:
+              print(f"Discord returned {response.status}")
+          PY
