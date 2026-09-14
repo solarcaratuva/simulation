@@ -78,16 +78,32 @@ jobs:
           else:
               issue = "Not linked"
 
-          description = (
-              f"**Author:** [{author}](https://github.com/{author})\n"
-              f"**Repository:** `{repo}`\n"
-              f"**Branch:** `{head}` → `{base}`\n"
-              f"**Changes:** +{additions} / -{deletions} • {changed_files} files\n"
-              f"**Related issue:** {issue}\n\n"
-              f"[**Open PR**]({url})"
-              f" • [Files changed]({url}/files)"
-              f" • [Checks]({url}/checks)"
-          )
+          fields = [
+              {
+                  "name": "Branch",
+                  "value": f"`{head}` → `{base}`",
+                  "inline": True
+              },
+              {
+                  "name": "Changes",
+                  "value": f"+{additions} / -{deletions}\n{changed_files} files changed",
+                  "inline": True
+              },
+              {
+                  "name": "Related Issue",
+                  "value": issue,
+                  "inline": True
+              },
+              {
+                  "name": "Links",
+                  "value": (
+                      f"[Open PR]({url})"
+                      f" • [Files Changed]({url}/files)"
+                      f" • [Checks]({url}/checks)"
+                  ),
+                  "inline": False
+              }
+          ]
 
           payload = {
               "content": f"<@&{role}> — new PR ready for review",
@@ -99,11 +115,12 @@ jobs:
                   {
                       "title": f"🔀 {repo} #{number} — {title}",
                       "url": url,
-                      "description": description,
+                      "description": f"PR #{number} is ready for review.",
                       "author": {
                           "name": author,
                           "icon_url": avatar
-                      }
+                      },
+                      "fields": fields
                   }
               ]
           }
