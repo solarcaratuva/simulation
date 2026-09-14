@@ -10,13 +10,10 @@ on:
 
 jobs:
   discord-notification:
-    # Normal PR:
-    #   Notify when opened.
-    #
-    # Draft PR:
-    #   Don't notify until "Ready for review" is clicked.
     if: >
       github.event.action == 'ready_for_review' ||
+      github.event.action == 'reopened' ||
+      github.event.action == 'synchronize' ||
       (github.event.action == 'opened' && github.event.pull_request.draft == false)
 
     runs-on: ubuntu-latest
@@ -27,7 +24,6 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_PR_WEBHOOK }}
           DISCORD_ROLE_ID: ${{ secrets.DISCORD_PR_REVIEW_ROLE }}
 
-          REPOSITORY: ${{ github.repository }}
           REPO_NAME: ${{ github.event.repository.name }}
           REPO_URL: ${{ github.event.repository.html_url }}
 
@@ -46,12 +42,15 @@ jobs:
           DELETIONS: ${{ github.event.pull_request.deletions }}
           CHANGED_FILES: ${{ github.event.pull_request.changed_files }}
 
+          EVENT_ACTION: ${{ github.event.action }}
+
         run: |
           python3 <<'PY'
           import json
           import os
           import re
           import urllib.request
+          import urllib.error
 
           repo = os.environ["REPO_NAME"]
           repo_url = os.environ["REPO_URL"]
@@ -73,11 +72,12 @@ jobs:
 
           role = os.environ["DISCORD_ROLE_ID"]
           webhook = os.environ["DISCORD_WEBHOOK"]
+          event_action = os.environ["EVENT_ACTION"]
 
-          # Find things like:
-          # Closes #64
-          # Fixes #64
-          # Resolves #64
+          print(f"Testing Discord notification for PR event: {event_action}")
+          print(f"Repository: {repo}")
+          print(f"PR: #{number} {title}")
+
           issue_match = re.search(
               r'(?i)(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)',
               body
@@ -89,14 +89,14 @@ jobs:
           else:
               issue = "Not linked"
 
-          # Discord forum post names max out at 100 characters.
           thread_name = f"[{repo} #{number}] {title}"[:100]
 
           description = (
               f"**Author:** [{author}](https://github.com/{author})\n"
               f"**Branch:** `{head}` → `{base}`\n"
               f"**Changes:** +{additions} / -{deletions} • {changed_files} files\n"
-              f"**Related issue:** {issue}\n\n"
+              f"**Related issue:** {issue}\n"
+              f"**Test event:** `{event_action}`\n\n"
               f"[**Open PR**]({url})"
               f" • [Files changed]({url}/files)"
               f" • [Checks]({url}/checks)"
@@ -104,25 +104,22 @@ jobs:
 
           payload = {
               "thread_name": thread_name,
-
-              # This is what actually causes the Discord notification.
               "content": f"<@&{role}> — new PR ready for review",
-
-              # Prevent anything except our intended role mention.
               "allowed_mentions": {
                   "roles": [role],
                   "parse": []
               },
-
-              "embeds": [{
-                  "title": f"🔀 {title}",
-                  "url": url,
-                  "description": description,
-                  "author": {
-                      "name": author,
-                      "icon_url": avatar
+              "embeds": [
+                  {
+                      "title": f"🔀 {title}",
+                      "url": url,
+                      "description": description,
+                      "author": {
+                          "name": author,
+                          "icon_url": avatar
+                      }
                   }
-              }]
+              ]
           }
 
           data = json.dumps(payload).encode("utf-8")
@@ -130,18 +127,25 @@ jobs:
           request = urllib.request.Request(
               webhook + "?wait=true",
               data=data,
-              headers={"Content-Type": "application/json"},
+              headers={
+                  "Content-Type": "application/json",
+                  "User-Agent": "Solar-Car-GitHub-Actions"
+              },
               method="POST",
           )
 
-          import urllib.error
-
           try:
               with urllib.request.urlopen(request) as response:
-                  print(f"Discord returned {response.status}")
-                  print(response.read().decode())
+                  print(f"Discord returned HTTP {response.status}")
+                  response_body = response.read().decode()
+                  print(response_body)
+
           except urllib.error.HTTPError as e:
               print(f"Discord returned HTTP {e.code}")
               print(e.read().decode())
+              raise
+
+          except urllib.error.URLError as e:
+              print(f"Failed to reach Discord: {e}")
               raise
           PY
