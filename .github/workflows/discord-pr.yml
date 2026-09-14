@@ -132,6 +132,14 @@ jobs:
               method="POST",
           )
 
-          with urllib.request.urlopen(request) as response:
-              print(f"Discord returned {response.status}")
+          import urllib.error
+
+          try:
+              with urllib.request.urlopen(request) as response:
+                  print(f"Discord returned {response.status}")
+                  print(response.read().decode())
+          except urllib.error.HTTPError as e:
+              print(f"Discord returned HTTP {e.code}")
+              print(e.read().decode())
+              raise
           PY
