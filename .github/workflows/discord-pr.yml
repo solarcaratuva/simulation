@@ -4,12 +4,16 @@ on:
   pull_request:
     types:
       - opened
+      - reopened
       - ready_for_review
+      - synchronize
 
 jobs:
   discord-notification:
     if: >
       github.event.action == 'ready_for_review' ||
+      github.event.action == 'reopened' ||
+      github.event.action == 'synchronize' ||
       (github.event.action == 'opened' && github.event.pull_request.draft == false)
 
     runs-on: ubuntu-latest
@@ -37,6 +41,8 @@ jobs:
           ADDITIONS: ${{ github.event.pull_request.additions }}
           DELETIONS: ${{ github.event.pull_request.deletions }}
           CHANGED_FILES: ${{ github.event.pull_request.changed_files }}
+
+          EVENT_ACTION: ${{ github.event.action }}
 
         run: |
           python3 <<'PY'
@@ -66,6 +72,9 @@ jobs:
 
           role = os.environ["DISCORD_ROLE_ID"]
           webhook = os.environ["DISCORD_WEBHOOK"]
+          event_action = os.environ["EVENT_ACTION"]
+
+          print(f"PR event: {event_action}")
 
           issue_match = re.search(
               r'(?i)(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)',
@@ -83,7 +92,8 @@ jobs:
               f"**Repository:** `{repo}`\n"
               f"**Branch:** `{head}` → `{base}`\n"
               f"**Changes:** +{additions} / -{deletions} • {changed_files} files\n"
-              f"**Related issue:** {issue}\n\n"
+              f"**Related issue:** {issue}\n"
+              f"**Test event:** `{event_action}`\n\n"
               f"[**Open PR**]({url})"
               f" • [Files changed]({url}/files)"
               f" • [Checks]({url}/checks)"
