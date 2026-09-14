@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create Discord forum post
+      - name: Send Discord PR notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_PR_WEBHOOK }}
           DISCORD_ROLE_ID: ${{ secrets.DISCORD_PR_REVIEW_ROLE }}
@@ -49,8 +49,8 @@ jobs:
           import json
           import os
           import re
-          import urllib.request
           import urllib.error
+          import urllib.request
 
           repo = os.environ["REPO_NAME"]
           repo_url = os.environ["REPO_URL"]
@@ -74,9 +74,7 @@ jobs:
           webhook = os.environ["DISCORD_WEBHOOK"]
           event_action = os.environ["EVENT_ACTION"]
 
-          print(f"Testing Discord notification for PR event: {event_action}")
-          print(f"Repository: {repo}")
-          print(f"PR: #{number} {title}")
+          print(f"PR event: {event_action}")
 
           issue_match = re.search(
               r'(?i)(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)',
@@ -89,10 +87,9 @@ jobs:
           else:
               issue = "Not linked"
 
-          thread_name = f"[{repo} #{number}] {title}"[:100]
-
           description = (
               f"**Author:** [{author}](https://github.com/{author})\n"
+              f"**Repository:** `{repo}`\n"
               f"**Branch:** `{head}` → `{base}`\n"
               f"**Changes:** +{additions} / -{deletions} • {changed_files} files\n"
               f"**Related issue:** {issue}\n"
@@ -103,7 +100,6 @@ jobs:
           )
 
           payload = {
-              "thread_name": thread_name,
               "content": f"<@&{role}> — new PR ready for review",
               "allowed_mentions": {
                   "roles": [role],
@@ -111,7 +107,7 @@ jobs:
               },
               "embeds": [
                   {
-                      "title": f"🔀 {title}",
+                      "title": f"🔀 {repo} #{number} — {title}",
                       "url": url,
                       "description": description,
                       "author": {
@@ -137,8 +133,7 @@ jobs:
           try:
               with urllib.request.urlopen(request) as response:
                   print(f"Discord returned HTTP {response.status}")
-                  response_body = response.read().decode()
-                  print(response_body)
+                  print(response.read().decode())
 
           except urllib.error.HTTPError as e:
               print(f"Discord returned HTTP {e.code}")
