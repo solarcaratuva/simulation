@@ -17,6 +17,11 @@ class TrackConfig:
 
     def __post_init__(self):
         self.lap_distance_m = self.lap_distance_km * 1000.0
+        self.validate()
+
+    def validate(self):
+        if self.lap_distance_km <= 0:
+            raise ValueError("Lap distance must be greater than 0.")
 
 
 @dataclass
@@ -31,6 +36,23 @@ class CarConfig:
     regen_efficiency: float = 0.5
     rho: float = 1.192
     g: float = 9.80665
+
+    def __post_init__(self):
+        self.validate()
+
+    def validate(self):
+        if self.mass <= 0:
+            raise ValueError("Mass must be greater than 0.")
+        if self.battery_capacity <= 0:
+            raise ValueError("Battery capacity must be greater than 0.")
+        if self.solar_panel_area < 0:
+            raise ValueError("Solar panel area must be non-negative.")
+        if not (0 <= self.solar_panel_efficiency <= 1):
+            raise ValueError("Solar panel efficiency must be between 0 and 1.")
+        if not (0 <= self.electrical_efficiency <= 1):
+            raise ValueError("Electrical efficiency must be between 0 and 1.")
+        if not (0 <= self.regen_efficiency <= 1):
+            raise ValueError("Regen efficiency must be between 0 and 1.")
 
     @classmethod
     def from_json(cls, filepath: str) -> "CarConfig":
@@ -68,15 +90,33 @@ class RaceConfig:
     fixed_speed_mps: float = 15.0
     max_speed_mps: float = 35.0
     min_speed_mps: float = 4.0
-    time_step_minutes: float = 1.0
     strategy: str = "pi"
+    time_step_minutes: float = 1.0
 
-    # constraints
     def __post_init__(self):
-        if self.energy_safety_scale >= 1:
-            self.energy_safety_scale = 1.0
-        elif self.energy_safety_scale <= 0:
-            self.energy_safety_scale = 0.01
+        self.validate()
+
+    def validate(self):
+        if not (0 <= self.start_soc <= 1):
+            raise ValueError("Start SOC must be between 0 and 1.")
+        if not (0 <= self.target_soc <= 1):
+            raise ValueError("Target SOC must be between 0 and 1.")
+        if not (0 <= self.min_soc <= 1):
+            raise ValueError("Min SOC must be between 0 and 1.")
+        if not (self.min_soc <= self.target_soc <= self.start_soc):
+            raise ValueError("SOC values must satisfy: min_soc <= target_soc <= start_soc.")
+        if self.max_speed_mps <= self.min_speed_mps:
+            raise ValueError("Max speed must be greater than min speed.")
+        if self.time_step_minutes <= 0:
+            raise ValueError("Time step must be greater than 0.")
+        if self.initial_speed_mps < self.min_speed_mps or self.initial_speed_mps > self.max_speed_mps:
+            raise ValueError("Initial speed must be between min and max speed.")
+        if self.fixed_speed_mps < self.min_speed_mps or self.fixed_speed_mps > self.max_speed_mps:
+            raise ValueError("Fixed speed must be between min and max speed.")
+        if self.aggressiveness <= 0:
+            raise ValueError("Aggressiveness must be greater than 0.")
+        if self.energy_safety_scale <= 0:
+            raise ValueError("Energy safety scale must be greater than 0.")
 
 
 @dataclass
