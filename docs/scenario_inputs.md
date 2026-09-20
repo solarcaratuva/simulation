@@ -211,6 +211,8 @@ A normal simulation also produces:
 - Race dashboard.
 - Text summary of race performance.
 
+
+
 ## Example Scenario
 
 ```text
