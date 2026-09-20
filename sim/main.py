@@ -24,8 +24,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Modular laps race simulator")
     parser.add_argument(
         "--location",
-        choices=["shenandoah"],
-        default="shenandoah",
+        choices=["shenandoah_speedway", "virginia_international_raceway", "brainerd_international_raceway"],
+        default=None,
         help="Race location selection (currently only Shenandoah)",
     )
     parser.add_argument(
@@ -126,22 +126,26 @@ def main():
         car = CarConfig()
         print("Using default car parameters")
 
-    print("Choose a track to test on:")
-    for i in range(len(tracks)):
-        print(f"({i+1}) {tracks[i].name}")
-    num = 1
-    while True:
-        inp = input()
-        if inp.isdigit():
-            num = int(inp)
-            if num <= 0 or num > len(tracks):
-                print("Invalid int")
-            else:
-                break
-        elif inp == "":
-            break
+    if args.location is not None:
+        track = next(track for track in tracks
+        if track.file_path_name == args.location)
+    else:
+        print("Choose a track to test on:")
+        for i, available_track in enumerate(tracks, start=1):
+            print(f"({i}) {available_track.name}")
 
-    track = tracks[num-1]
+        num = 1
+        while True:
+            inp = input()
+            if inp.isdigit():
+                num = int(inp)
+                if num <= 0 or num > len(tracks):
+                    print("Invalid int")
+                else:
+                    break
+            elif inp == "":
+                break
+        track = tracks[num-1]
 
     if args.plan:
         base_race = RaceConfig(
@@ -231,7 +235,7 @@ def main():
     reporter.print_summary()
 
     output_dir = os.path.join("plots", "laps_modular")
-    prefix = f"shenandoah_{selected_strategy}"
+    prefix = f"{track.file_path_name}_{selected_strategy}"
     plotter = SimulationPlotter(results, track)
     saved = save_all_plots(plotter, output_dir, prefix)
 

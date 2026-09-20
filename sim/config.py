@@ -8,6 +8,7 @@ import numpy as np
 @dataclass
 class TrackConfig:
     name: str
+    file_path_name: str
     location: str
     latitude: float
     longitude: float
@@ -143,6 +144,7 @@ def get_available_tracks() -> List[TrackConfig]:
     return [
         TrackConfig(
             name="Shenandoah Speedway",
+            file_path_name="shenandoah_speedway",
             location="Page County, Virginia",
             latitude=38.5110,
             longitude=-78.6359,
@@ -151,6 +153,7 @@ def get_available_tracks() -> List[TrackConfig]:
         ),
         TrackConfig(
             name= "Virginia International Raceway (Patriot Course)",
+            file_path_name="virginia_international_raceway", 
             location="Alton, Virginia",
             latitude=36.5666,
             longitude=-79.2058,
@@ -159,6 +162,7 @@ def get_available_tracks() -> List[TrackConfig]:
         ),
         TrackConfig(
             name= "Brainerd International Raceway (Donnybrooke Course)",
+            file_path_name="brainerd_international_raceway",
             location="Brainerd, Minnesota",
             latitude=46.4176,
             longitude=-94.2853,
