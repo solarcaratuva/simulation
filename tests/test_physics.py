@@ -97,3 +97,13 @@ def test_solar_power_scales_with_panel_efficiency():
     power_at_40 = physics.solar_power(1000)
 
     assert math.isclose(power_at_40, 2 * power_at_20)
+
+def test_solar_power_exact_value():
+    # 1000 W/m^2 * 4 m^2 * 25% efficiency = 1000 W
+    car = CarConfig(
+        solar_panel_area=4,
+        solar_panel_efficiency=0.25,
+    )
+    physics = PhysicsEngine(car)
+
+    assert math.isclose(physics.solar_power(1000), 1000.0)
