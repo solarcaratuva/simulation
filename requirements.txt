@@ -1,3 +1,8 @@
+# To run the tests:
+# 1. Ensure pytest is installed: pip install pytest
+# 2. Navigate to the project root directory.
+# 3. Run the tests using the command: pytest tests/
+
 numpy
 matplotlib
 openmeteo_requests

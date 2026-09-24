@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from types import SimpleNamespace
 
 from sim.simulator import LapsRaceSimulator
@@ -61,17 +62,22 @@ def make_simulator(lap_distance_m=1000.0, time_step_minutes=1.0,
 
 
 def test_counts_multiple_laps_in_one_timestep():
-    """A timestep covering more than two laps counts every completed lap."""
+    """Each timestep covers several full laps, and every lap is counted."""
     simulator = make_simulator(
         lap_distance_m=1000.0,
         time_step_minutes=1.0,
         optimal_speed=50.0,
     )
 
-    # 50 m/s for 60 seconds = 3000 m = exactly 3 laps per timestep.
+    # The run has two 1-minute timesteps. At 50 m/s, each timestep covers
+    # 3000 m, which is exactly 3 laps, so 6 laps in total.
     results = simulator.run()
 
     assert results.total_laps == 6
+
+    # Each lap is 1000 m at 50 m/s = 20 s = 1/3 min, including the laps
+    # that finish within the same timestep.
+    assert results.lap_times == pytest.approx([1 / 3] * 6)
 
 
 def test_partial_lap_distance_carries_over():
@@ -82,14 +88,20 @@ def test_partial_lap_distance_carries_over():
         optimal_speed=2500.0 / 60.0,
     )
 
-    # First timestep: 2500 m -> 2 laps + 500 m.
-    # Change speed for the second timestep so it travels 600 m.
+    # Timestep 1: 2500 m -> 2 laps + 500 m leftover.
+    # Change speed for timestep 2 so it travels 600 m.
     simulator.strategy.next_speed = lambda i, *args: 10.0
 
     results = simulator.run()
 
     # The 500 m leftover plus the next 600 m completes a third lap.
     assert results.total_laps == 3
+
+    # Lap durations in minutes:
+    # Laps 1 and 2 finish at 24 s and 48 s, so each takes 24 s = 0.4 min.
+    # Lap 3 starts at 48 s. It finishes at 60 s + 50 s (the 500 m still
+    # needed at 10 m/s) = 110 s, so it takes 62 s.
+    assert results.lap_times == pytest.approx([0.4, 0.4, 62 / 60])
 
 
 def test_one_lap_at_a_time_still_works():
@@ -103,3 +115,4 @@ def test_one_lap_at_a_time_still_works():
     results = simulator.run()
 
     assert results.total_laps == 2
+    assert results.lap_times == pytest.approx([1.0, 1.0])
