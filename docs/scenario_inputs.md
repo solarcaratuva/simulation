@@ -27,14 +27,14 @@ Source: `car_params.json`
 
 | Parameter | Units | Required | Affects |
 |---|---:|---|---|
-| `mass` | kg | Yes | Rolling resistance, regenerative energy, total energy use |
-| `battery_capacity` | Wh | Yes | Available battery energy and SOC changes |
+| `mass` | kg | Yes | Rolling resistance, Regen energy, total energy use |
+| `battery_capacity` | Wh | Yes | Available battery energy, SOC changes |
 | `solar_panel_area` | m² | Yes | Solar power collected |
 | `solar_panel_efficiency` | fraction | Yes | Solar power collected |
 | `electrical_efficiency` | fraction | Yes | Driving power consumption |
-| `C_dA` | m² | Yes | Aerodynamic drag and speed energy use |
-| `tire_pressure` | pressure units | Yes | Rolling resistance and energy use |
-| `regen_efficiency` | fraction | Yes | Energy recovered during deceleration |
+| `C_dA` | m² | Yes | Aerodynamic drag, energy use |
+| `tire_pressure` | pressure units | Yes | Rolling resistance,  energy use |
+| `regen_efficiency` | fraction | Yes | Regen energy |
 | `rho` | kg/m³ | Yes | Aerodynamic drag |
 | `g` | m/s² | Yes | Rolling resistance |
 
@@ -55,12 +55,12 @@ Available track IDs: `shenandoah_speedway`, `virginia_international_raceway`, `b
 
 | Parameter | Units | Required | Default | Affects |
 |---|---:|---|---:|---|
-| `start_time_hour` | local hour | Yes | `10.0` | Race duration and weather window |
-| `end_time_hour` | local hour | Yes | `18.0` | Race duration and weather window |
-| `start_soc` | fraction | Yes | `1.0` | Starting energy and achievable distance |
-| `target_soc` | fraction | No | `0.10` | Planned energy budget and SOC trajectory |
+| `start_time_hour` | local hour | Yes | `10.0` | Race duration, weather window |
+| `end_time_hour` | local hour | Yes | `18.0` | Race duration, weather window |
+| `start_soc` | fraction | Yes | `1.0` | Starting energy, achievable distance |
+| `target_soc` | fraction | No | `0.10` | Planned energy budget, SOC trajectory |
 | `min_soc` | fraction | No | `0.10` | Early-stop safety threshold |
-| `energy_safety_scale` | fraction | No | `1.0` | Energy reserve and conservatism |
+| `energy_safety_scale` | fraction | No | `1.0` | Energy reserve |
 
 ### Weather Configuration
 
@@ -69,8 +69,8 @@ Available track IDs: `shenandoah_speedway`, `virginia_international_raceway`, `b
 | `source` | `api` / `synthetic` / `file` | Yes | API | Weather data used |
 | `race_date` | date | No | Auto-selected | Forecast date |
 | `weather_file` | path | No | None | User-provided GHI and cloud data |
-| `random_seed` | integer | No | `7` in sweeps | Synthetic-weather repeatability |
-| `GHI`, `cloud_cover` | weather data | File source only | None | Solar charging and SOC trajectory |
+| `random_seed` | integer | No | `7` in sweeps | Synthetic-weather generation |
+| `GHI`, `cloud_cover` | weather data | File source only | None | Solar charging, SOC trajectory |
 
 The current API uses Open-Meteo shortwave radiation and cloud cover. API failure falls back to synthetic weather.
 
@@ -78,12 +78,12 @@ The current API uses Open-Meteo shortwave radiation and cloud cover. API failure
 
 | Parameter | Units / values | Required | Default | Affects |
 |---|---|---|---|---|
-| `strategy` | `pi`, `stepped`, `interval-hold`, `fixed` | Yes | `pi` | Speed response to SOC and weather |
+| `strategy` | `pi`, `stepped`, `interval-hold`, `fixed` | Yes | `pi` | Speed strategy |
 | `aggressiveness` | scalar | No | Strategy-specific | Controller response strength |
 | `fixed_speed_mps` | m/s | No | `15.0` | Fixed-strategy speed |
 | `min_speed_mps` | m/s | No | `4.0` | Lower speed limit |
 | `max_speed_mps` | m/s | No | `35.0` | Upper speed limit |
-| `initial_speed_mps` | m/s | No | `20.0` | Currently unused |
+| `initial_speed_mps` | m/s | No | `20.0` | *Currently unused* |
 
 Planning aggressiveness defaults: `pi=1.5`, `stepped=1.2`, `interval-hold=1.0`, `fixed=1.0`.
 
@@ -91,8 +91,8 @@ Planning aggressiveness defaults: `pi=1.5`, `stepped=1.2`, `interval-hold=1.0`, 
 
 | Parameter | Type | Required | Default | Affects |
 |---|---|---|---|---|
-| `time_step_minutes` | minutes | No | `1.0` | Simulation resolution and update frequency |
-| `use_api_weather` | boolean | No | `True` | API versus synthetic weather |
+| `time_step_minutes` | minutes | No | `1.0` | Simulation update frequency |
+| `use_api_weather` | boolean | No | `True` | Weather data source |
 | `planning_enabled` | boolean | No | `False` | Single run versus planning study |
 | `strategies` | list | No | All strategies | Strategies compared |
 | `fixed_speed_values_mph` | list | No | `10`-`46`, step `2` | Speeds compared |
