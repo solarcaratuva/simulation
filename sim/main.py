@@ -99,8 +99,8 @@ def run_speed_sweep(track, car, args):
     )
 
     print("\nSpeed sweep summary")
-    print("  Speed (mph) | Final SoC (%) | Laps | Distance (mi) | 10% reached at")
-    print("  ----------- | ------------- | ---- | ------------- | --------------")
+    print("  Speed (mph) | Final SoC (%) | Target SoC | Laps | Distance (mi) | Target SoC% reached at")
+    print("  ----------- | ------------- | ---------- | ---- | ------------- | ----------------------")
     for row in rows:
         cutoff = (
             "Full 8h"
