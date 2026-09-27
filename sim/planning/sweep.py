@@ -48,6 +48,7 @@ def run_fixed_speed_sweep(
         row = build_comparison_row(
             "fixed",
             race,
+            car,
             results,
             label=f"{mph} mph",
             study="fixed-speed",
@@ -87,6 +88,6 @@ def run_strategy_sweep(
         )
         np.random.seed(synthetic_weather_seed)
         results = simulator.run()
-        rows.append(build_comparison_row(strategy, race, results, study="strategy"))
+        rows.append(build_comparison_row(strategy, race, car, results, study="strategy"))
 
     return rows

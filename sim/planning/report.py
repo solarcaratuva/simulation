@@ -27,6 +27,7 @@ def print_planning_report(
     print(f"Track: {track.name}")
     print(f"Location: {track.location}")
     print(f"Battery capacity: {car_config.battery_capacity}")
+    print(f"Target final battery energy: {car_config.battery_capacity * race_config.target_soc} watt-hours")
     print(f"Target final SoC: {race_config.target_soc * 100:.1f}%")
 
     print("Best Fixed Speed:")
@@ -59,7 +60,9 @@ def print_planning_report(
     for row in strategy_rows:
         print(
             f"  {row['strategy']:<14}"
-            f"  {row['target_soc_pct']:>5.1f}% of target final SOC"
+            f"  {row['soc_margin_pct']:>5.1f}% over/under target SoC%"
+            f"  {row['final_battery_energy_wh']:.2f} Wh battery energy"
+            f"  {row['soc_margin_wh']:.2f} Wh over/under target SoC"
         )
     print()
 
