@@ -52,7 +52,9 @@ def print_planning_report(
         print(
             f"  {row['strategy']:<14}"
             f"  {row['laps']:>3} laps"
+            f"  {row['target_soc_pct']:>5.1f}% target SoC"
             f"  {row['final_soc_pct']:>5.1f}% final SoC"
+            f"  {row['soc_margin_pct']:>5.1f}% over/under target SoC%"
             f"  {status}"
         )
 
@@ -60,9 +62,9 @@ def print_planning_report(
     for row in strategy_rows:
         print(
             f"  {row['strategy']:<14}"
-            f"  {row['soc_margin_pct']:>5.1f}% over/under target SoC%"
+            f"  {row['target_battery_energy_wh']:.2f} Wh target battery energy"
             f"  {row['final_battery_energy_wh']:.2f} Wh final battery energy"
-            f"  {row['soc_margin_wh']:.2f} Wh over/under target SoC"
+            f"  {row['energy_margin_wh']:.2f} Wh over/under target SoC"
         )
     print()
 
