@@ -172,7 +172,8 @@ def main():
             track=track,
             fixed_speed_rows=fixed_speed_rows,
             strategy_rows=strategy_rows,
-            config=base_race
+            race_config=base_race,
+            car_config=car
         )
         return
 

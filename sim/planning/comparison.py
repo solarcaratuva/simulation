@@ -16,7 +16,6 @@ def build_comparison_row(
         "min_soc_pct": results.min_soc_pct,
         "target_soc_pct": race.target_soc * 100.0,
         "soc_margin_in_pct": results.final_soc_pct - (race.target_soc * 100.0),
-        # "battery_capacity_wh": None,
         "target_battery_energy_wh": None,
         "final_battery_energy_wh": None,
         "energy_margin_wh": None,
