@@ -1,3 +1,4 @@
+from sim.config import RaceConfig, CarConfig
 from sim.planning.comparison import sort_planning_rows
 
 
@@ -6,6 +7,8 @@ def print_planning_report(
     track,
     fixed_speed_rows: list[dict],
     strategy_rows: list[dict],
+    race_config: RaceConfig,
+    car_config: CarConfig,
 ) -> None:
     combined_rows = fixed_speed_rows + strategy_rows
     best_fixed_speed_row = (
@@ -23,7 +26,9 @@ def print_planning_report(
     print()
     print(f"Track: {track.name}")
     print(f"Location: {track.location}")
-    print()
+    print(f"Battery capacity: {car_config.battery_capacity} Wh")
+    print(f"Target final battery energy: {car_config.battery_capacity * race_config.target_soc} Wh")
+    print(f"Target final SoC: {race_config.target_soc * 100:.1f}%")
 
     print("Best Fixed Speed:")
     if best_fixed_speed_row is None:
@@ -46,9 +51,20 @@ def print_planning_report(
         )
         print(
             f"  {row['strategy']:<14}"
-            f" {row['laps']:>3} laps"
+            f"  {row['laps']:>3} laps"
+            f"  {row['target_soc_pct']:>5.1f}% target SoC"
             f"  {row['final_soc_pct']:>5.1f}% final SoC"
+            f"  {row['soc_margin_pct']:>5.1f}% over/under target SoC%"
             f"  {status}"
+        )
+
+    print()
+    for row in strategy_rows:
+        print(
+            f"  {row['strategy']:<14}"
+            f"  {row['target_battery_energy_wh']:.2f} Wh target battery energy"
+            f"  {row['final_battery_energy_wh']:.2f} Wh final battery energy"
+            f"  {row['energy_margin_wh']:.2f} Wh over/under target SoC"
         )
     print()
 
