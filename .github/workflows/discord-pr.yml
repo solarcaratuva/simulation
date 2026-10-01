@@ -135,11 +135,6 @@ jobs:
                   {
                       "title": f"🔀 {repo} #{number} — {title}",
                       "url": url,
-                      "description": description,
-                      "author": {
-                          "name": author,
-                          "icon_url": avatar
-                      }
                       "description": f"PR #{number} is ready for review.",
                       "author": {
                           "name": author,
