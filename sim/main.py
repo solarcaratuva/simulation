@@ -98,9 +98,11 @@ def run_speed_sweep(track, car, args):
         use_api_weather=True,
     )
 
+    print(rows[0].keys())
+
     print("\nSpeed sweep summary")
-    print("  Speed (mph) | Final SoC (%) | Target SoC | Laps | Distance (mi) | Target SoC% reached at")
-    print("  ----------- | ------------- | ---------- | ---- | ------------- | ----------------------")
+    print("  Speed (mph) | Final SoC (%) | Target SoC% | SoC Margin (%) | Energy Margin (Wh) | Laps | Distance (mi) | Target SoC% reached at")
+    print("  ----------- | ------------- | ----------- | -------------- | ------------------ | ---- | ------------- | ----------------------")
     for row in rows:
         cutoff = (
             "Full 8h"
@@ -109,6 +111,7 @@ def run_speed_sweep(track, car, args):
         )
         print(
             f"  {row['mph']:>11.0f} | {row['final_soc_pct']:>13.1f} |"
+            f" {row['target_soc_pct']:>10.1f}% | {row['soc_margin_pct']:>13.1f}% | {row['energy_margin_wh']:>18.1f} |"
             f" {row['laps']:>4} | {row['distance_miles']:>13.1f} | {cutoff:>11}"
         )
 
