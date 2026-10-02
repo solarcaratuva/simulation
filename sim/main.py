@@ -98,8 +98,6 @@ def run_speed_sweep(track, car, args):
         use_api_weather=True,
     )
 
-    print(rows[0].keys())
-
     print("\nSpeed sweep summary")
     print("  Speed (mph) | Final SoC (%) | Target SoC% | SoC Margin (%) | Energy Margin (Wh) | Laps | Distance (mi) | Target SoC% reached at")
     print("  ----------- | ------------- | ----------- | -------------- | ------------------ | ---- | ------------- | ----------------------")
