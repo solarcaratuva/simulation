@@ -31,7 +31,7 @@ def build_comparison_row(
     }
     if metadata:
         row["metadata"] = metadata
-    row["feasiblity"] = check_feasibility(row)
+    row["feasibility"] = check_feasibility(row)
     return row
 
 def check_feasibility(row: dict) -> bool:

@@ -55,7 +55,7 @@ def print_planning_report(
             f"  {row['target_soc_pct']:>5.1f}% target SoC"
             f"  {row['final_soc_pct']:>5.1f}% final SoC"
             f"  {row['soc_margin_pct']:>5.1f}% over/under target SoC%"
-            f"  {status}; {row['feasiblity'] and 'feasible' or 'infeasible'}"
+            f"  {status}; {row['feasibility'] and 'feasible' or 'infeasible'}"
         )
 
     print()
