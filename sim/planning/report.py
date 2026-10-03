@@ -82,20 +82,24 @@ def export_planning_report_to_csv(
     *,
     fixed_speed_rows: list[dict],
     strategy_rows: list[dict],
-    output_file_path: str,
+    output_dir: str,
+    file_name: str = "planning_report.csv",
 ) -> None:
 
     import csv
+    import os.path
 
     combined_rows = fixed_speed_rows + strategy_rows
     if not combined_rows:
         return
 
+    os.makedirs(output_dir, exist_ok=True)
+
     fieldnames = combined_rows[0].keys()
-    with open(output_file_path, mode='w', newline='') as csvfile:
+    with open(os.path.join(output_dir, file_name), mode='w', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for row in combined_rows:
             writer.writerow(row)
 
-    print(f"Planning report CSV exported to {output_file_path}")
+    print(f"Planning report CSV exported to {output_dir}")
