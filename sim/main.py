@@ -97,7 +97,6 @@ def run_speed_sweep(track, car, args):
         speeds_mph=SPEED_SWEEP_MPH,
         use_api_weather=True,
     )
-    rows.sort(key=lambda row: row["mph"])
 
     print_speed_sweep_summary(rows)
 
@@ -119,10 +118,11 @@ def run_speed_sweep(track, car, args):
 def print_speed_sweep_summary(rows):
     print("\nSpeed sweep results:")
 
-    # using a generator (lazy evaluation) to do this
-    slowest_feasible = next((row for row in rows if row["feasibility"]), None)
-    fastest_feasible = next((row for row in reversed(rows) if row["feasibility"]), None)
-    best_fixed_speed_row = max((row for row in rows if row["feasibility"]), key=lambda row: row["distance_miles"])
+    rows.sort(key=lambda row: row["mph"])
+    feasible_rows = [row for row in rows if row["feasibility"]]
+    slowest_feasible = feasible_rows[0] if feasible_rows else None
+    fastest_feasible = feasible_rows[-1] if feasible_rows else None
+    best_fixed_speed_row = max(feasible_rows, key=lambda row: row["distance_miles"]) if feasible_rows else None
 
     none_feasible = all(not row["feasibility"] for row in rows)
     all_feasible = all(row["feasibility"] for row in rows)
