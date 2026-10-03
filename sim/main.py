@@ -12,7 +12,7 @@ from sim.planning.sweep import (
     run_fixed_speed_sweep,
     run_strategy_sweep,
 )
-from sim.planning.report import print_planning_report
+from sim.planning.report import print_planning_report, export_planning_report_to_csv
 from sim.simulator import LapsRaceSimulator
 from sim.reporting import ResultsReporter
 from sim.plotting import SimulationPlotter, save_all_plots
@@ -200,6 +200,13 @@ def main():
             strategy_rows=strategy_rows,
             race_config=base_race,
             car_config=car
+        )
+
+        output_path = os.path.join(os.getcwd(), "csv/")
+        export_planning_report_to_csv(
+            fixed_speed_rows=fixed_speed_rows,
+            strategy_rows=strategy_rows,
+            output_dir=output_path,
         )
         return
 
