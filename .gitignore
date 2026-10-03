@@ -220,6 +220,7 @@ plots/laps_modular/*
 !plots/laps_modular/.gitkeep
 lap_sim_plots/*
 plots/*
+csv/*
 
 .idea
 venv.
