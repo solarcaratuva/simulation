@@ -55,7 +55,7 @@ def print_planning_report(
             f"  {row['target_soc_pct']:>5.1f}% target SoC"
             f"  {row['final_soc_pct']:>5.1f}% final SoC"
             f"  {row['soc_margin_pct']:>5.1f}% over/under target SoC%"
-            f"  {status}; {row['feasiblity'] and 'feasible' or 'infeasible'}"
+            f"  {status}; {row['feasibility'] and 'feasible' or 'infeasible'}"
         )
 
     print()
@@ -77,3 +77,25 @@ def print_planning_report(
             f"  Expected result: {best_row['laps']} laps, "
             f"{best_row['final_soc_pct']:.1f}% final SoC."
         )
+
+def export_planning_report_to_csv(
+    *,
+    fixed_speed_rows: list[dict],
+    strategy_rows: list[dict],
+    output_file_path: str,
+) -> None:
+
+    import csv
+
+    combined_rows = fixed_speed_rows + strategy_rows
+    if not combined_rows:
+        return
+
+    fieldnames = combined_rows[0].keys()
+    with open(output_file_path, mode='w', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in combined_rows:
+            writer.writerow(row)
+
+    print(f"Planning report CSV exported to {output_file_path}")
