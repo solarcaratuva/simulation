@@ -31,7 +31,11 @@ def build_comparison_row(
     }
     if metadata:
         row["metadata"] = metadata
+    row["feasibility"] = check_feasibility(row)
     return row
+
+def check_feasibility(row: dict) -> bool:
+    return row["completed_full_window"] and row["final_soc_pct"] >= row["target_soc_pct"]
 
 
 def sort_planning_rows(rows: list[dict]) -> list[dict]:
