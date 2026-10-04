@@ -98,7 +98,9 @@ def run_speed_sweep(track, car, args):
         use_api_weather=True,
     )
 
-    print("\nSpeed sweep summary")
+    print_speed_sweep_summary(rows)
+
+    print("\nSpeed sweep table")
     print("  Speed (mph) | Final SoC (%) | Target SoC% | SoC Margin (%) | Energy Margin (Wh) | Laps | Distance (mi) | Target SoC% reached at | Feasible?")
     print("  ----------- | ------------- | ----------- | -------------- | ------------------ | ---- | ------------- | ---------------------- | ---------")
     for row in rows:
@@ -113,6 +115,29 @@ def run_speed_sweep(track, car, args):
             f" {row['laps']:>4} | {row['distance_miles']:>13.1f} | {cutoff:>22} | {'Yes' if row['feasibility'] else 'No'}"
         )
 
+def print_speed_sweep_summary(rows):
+    print("\nSpeed sweep results:")
+
+    rows.sort(key=lambda row: row["mph"])
+    feasible_rows = [row for row in rows if row["feasibility"]]
+    slowest_feasible = feasible_rows[0] if feasible_rows else None
+    fastest_feasible = feasible_rows[-1] if feasible_rows else None
+    best_fixed_speed_row = max(feasible_rows, key=lambda row: row["distance_miles"]) if feasible_rows else None
+
+    none_feasible = all(not row["feasibility"] for row in rows)
+    all_feasible = all(row["feasibility"] for row in rows)
+
+    print(f"{len(rows)} speeds were tested")
+    if none_feasible:
+        print("No speeds were feasible!")
+    else:
+        print(f"Slowest feasible speed: {slowest_feasible['mph']} mph" if slowest_feasible else "None")
+        print(f"Fastest feasible speed: {fastest_feasible['mph']} mph" if fastest_feasible else "None")
+        print(f"Best feasible fixed speed (max distance): {best_fixed_speed_row['mph']} mph "
+              f"with {best_fixed_speed_row['distance_miles']:.1f} mi"
+              if best_fixed_speed_row else "None")
+    if all_feasible:
+        print("All speeds were feasible!")
 
 def main():
     args = parse_args()
