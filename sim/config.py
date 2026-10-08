@@ -43,6 +43,8 @@ class CarConfig:
     def validate(self):
         if self.mass <= 0:
             raise ValueError("Mass must be greater than 0.")
+        if self.tire_pressure <= 0:
+            raise ValueError("Tire pressure must be greater than 0.")
         if self.battery_capacity <= 0:
             raise ValueError("Battery capacity must be greater than 0.")
         if self.solar_panel_area < 0:
@@ -94,6 +96,10 @@ class RaceConfig:
     time_step_minutes: float = 1.0
 
     def __post_init__(self):
+        if self.energy_safety_scale >= 1:
+            self.energy_safety_scale = 1.0
+        elif self.energy_safety_scale <= 0:
+            self.energy_safety_scale = 0.01
         self.validate()
 
     def validate(self):
@@ -113,10 +119,6 @@ class RaceConfig:
             raise ValueError("Initial speed must be between min and max speed.")
         if self.fixed_speed_mps < self.min_speed_mps or self.fixed_speed_mps > self.max_speed_mps:
             raise ValueError("Fixed speed must be between min and max speed.")
-        if self.aggressiveness <= 0:
-            raise ValueError("Aggressiveness must be greater than 0.")
-        if self.energy_safety_scale <= 0:
-            raise ValueError("Energy safety scale must be greater than 0.")
 
 
 @dataclass
