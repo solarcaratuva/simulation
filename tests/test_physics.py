@@ -1,3 +1,5 @@
+# At zero speed, both aerodynamic/rolling force power terms are multiplied
+# by velocity, so the current model produces zero power draw.
 import math
 
 from sim.config import CarConfig
