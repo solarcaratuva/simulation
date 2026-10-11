@@ -114,7 +114,7 @@ jobs:
                     {
                         "title": f"🔀 {repo} #{number} — {title}",
                         "url": url,
-                        "description": f"PR #{number} is ready for review.",
+                        "description": f"PR #{number} has been opened.",
                         "author": {
                             "name": author,
                             "icon_url": avatar
@@ -122,8 +122,8 @@ jobs:
                         "fields": fields
                     }
                 ]
-            }
-        
+            }  
+
           data = json.dumps(payload).encode("utf-8")
 
           request = urllib.request.Request(
