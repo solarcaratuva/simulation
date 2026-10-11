@@ -78,15 +78,22 @@ class LapsRaceSimulator:
                 soc = float(np.clip(next_soc, self.race.min_soc, 1.0))
 
             distance_step = speed * (dt_minutes * 60) * step_fraction
+            step_start = time_minutes[i]
+            step_duration = dt_minutes * step_fraction
+            carry = current_lap_distance  # distance already covered on the current lap
+            distance_into_step = 0.0
             total_distance += distance_step
             current_lap_distance += distance_step
 
-            if current_lap_distance >= self.track.lap_distance_m and speed > 0:
+            while current_lap_distance >= self.track.lap_distance_m and speed > 0:
                 total_laps += 1
-                lap_time = (time_minutes[i] + dt_minutes * step_fraction) - lap_start_time
-                lap_times.append(lap_time)
+                needed = self.track.lap_distance_m - carry
+                distance_into_step += needed
+                lap_end = step_start + step_duration * (distance_into_step / distance_step)
+                lap_times.append(lap_end - lap_start_time)
+                lap_start_time = lap_end
+                carry = 0.0
                 current_lap_distance -= self.track.lap_distance_m
-                lap_start_time = time_minutes[i] + dt_minutes * step_fraction
 
             soc_error = soc - ideal_soc[i]
             prev_speed = speed
