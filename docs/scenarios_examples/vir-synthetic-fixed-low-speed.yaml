@@ -1,0 +1,23 @@
+scenario:
+  name: VIR offline low-speed energy-conservation run
+  car_parameter_file: car_params.json
+  course_file: courses/virginia_international_raceway.json
+
+  race:
+    start_time_hour: 11.0
+    end_time_hour: 17.0
+    start_soc: 0.80
+    target_soc: 0.20
+    min_soc: 0.10
+
+  weather:
+    source: synthetic
+    random_seed: 4
+
+  strategy:
+    name: fixed
+    fixed_speed_mps: 12.0
+    aggressiveness: 1.0
+
+  simulation:
+    time_step_minutes: 1.0

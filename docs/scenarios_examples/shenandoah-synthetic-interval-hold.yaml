@@ -1,0 +1,24 @@
+scenario:
+  name: Shenandoah offline interval-hold endurance run
+  car_parameter_file: car_params.json
+  course_file: courses/shenandoah_speedway.json
+
+  race:
+    start_time_hour: 10.0
+    end_time_hour: 18.0
+    start_soc: 0.95
+    target_soc: 0.20
+    min_soc: 0.10
+
+  weather:
+    source: synthetic
+    random_seed: 21
+
+  strategy:
+    name: interval-hold
+    aggressiveness: 0.8
+    min_speed_mps: 4.0
+    max_speed_mps: 32.0
+
+  simulation:
+    time_step_minutes: 1.0
