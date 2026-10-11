@@ -66,11 +66,10 @@ Available track IDs: `shenandoah_speedway`, `virginia_international_raceway`, `b
 
 | Parameter | Type | Required | Default | Affects |
 |---|---|---|---|---|
-| `source` | `api` / `synthetic` / `file` | Yes | API | Weather data used |
+| `source` | `api` / `synthetic` | Yes | API | Weather data used |
 | `race_date` | date | No | Auto-selected | Forecast date |
-| `weather_file` | path | No | None | User-provided GHI and cloud data |
 | `random_seed` | integer | No | `7` in sweeps | Synthetic-weather generation |
-| `GHI`, `cloud_cover` | weather data | File source only | None | Solar charging, SOC trajectory |
+| `GHI`, `cloud_cover` | weather data | Generated or API-provided | None | Solar charging, SOC trajectory |
 
 The current API uses Open-Meteo shortwave radiation and cloud cover. API failure falls back to synthetic weather.
 
@@ -105,3 +104,71 @@ Planning aggressiveness defaults: `pi=1.5`, `stepped=1.2`, `interval-hold=1.0`, 
 - Average, minimum, and maximum speed
 - Full-window completion status
 - Time and laps when minimum SOC was reached
+
+### Example Scenario Outlines
+The following are examples of format files that can be implemented as YAML.
+
+1. Scenario 1: 
+    - Track: Shenandoah Raceway
+    - Strategy: fixed-speed sweep strategy comparison
+
+```
+scenario:
+  name: Shenandoah fixed-speed sweep
+  car_params: car_params.json
+  track: shenandoah_speedway
+
+  mode: sweep
+
+  race:
+    start_time_hour: 10.0
+    end_time_hour: 18.0
+    start_soc: 1.0
+    target_soc: 0.10
+    min_soc: 0.10
+
+  weather:
+    source: api
+
+  strategy:
+    name: fixed
+    aggressiveness: 1.0
+
+  planning:
+    fixed_speed_values_mph: [18, 22, 26, 30, 34, 38]
+
+  simulation:
+    time_step_minutes: 1.0
+```
+
+2. Scenario 2: 
+    - Track: Brainerd
+    - Strategy: PI with aggressiveness = 0.9.
+
+```
+scenario:
+  name: Brainerd PI controller run
+  car_params: car_params.json
+  track: brainerd_international_raceway
+
+  mode: strategy
+
+  race:
+    start_time_hour: 10.0
+    end_time_hour: 18.0
+    start_soc: 1.0
+    target_soc: 0.10
+    min_soc: 0.10
+
+  strategy:
+    name: pi
+    aggressiveness: 0.9
+    min_speed_mps: 4.0
+    max_speed_mps: 35.0
+
+  weather:
+    source: api
+
+  simulation:
+    time_step_minutes: 1.0
+```
