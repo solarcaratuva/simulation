@@ -1,0 +1,23 @@
+scenario:
+  name: VIR API forecast conservative PI run
+  car_parameter_file: car_params.json
+  course_file: courses/virginia_international_raceway.json
+
+  race:
+    start_time_hour: 10.0
+    end_time_hour: 18.0
+    start_soc: 1.0
+    target_soc: 0.15
+    min_soc: 0.10
+
+  weather:
+    source: api
+
+  strategy:
+    name: pi
+    aggressiveness: 0.9
+    min_speed_mps: 4.0
+    max_speed_mps: 30.0
+
+  simulation:
+    time_step_minutes: 1.0

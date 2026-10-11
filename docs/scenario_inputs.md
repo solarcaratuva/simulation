@@ -105,20 +105,34 @@ Planning aggressiveness defaults: `pi=1.5`, `stepped=1.2`, `interval-hold=1.0`, 
 - Full-window completion status
 - Time and laps when minimum SOC was reached
 
-### Example Scenario Outlines
-The following are examples of format files that can be implemented as YAML.
+## YAML Scenario File Format
 
-1. Scenario 1: 
-    - Track: Shenandoah Raceway
-    - Strategy: fixed-speed sweep strategy comparison
+YAML is used for scenario files to represent nested race,
+weather, and strategy settings clearly, and for convenient editing.
 
-```
+Each scenario file contains:
+
+| Field | Required | Description |
+|---|---|---|
+| `scenario.name` | Yes | Human-readable scenario name |
+| `scenario.car_parameter_file` | Yes | Path to the car parameter JSON file |
+| `scenario.course_file` | Yes | Path to the course/track definition file |
+| `scenario.race.start_time_hour` | Yes | Local race start time, expressed as decimal hours |
+| `scenario.race.end_time_hour` | Yes | Local race end time, expressed as decimal hours |
+| `scenario.race.start_soc` | Yes | Initial battery state of charge from `0.0` to `1.0` |
+| `scenario.weather.source` | Yes | `synthetic` for offline weather or `api` for Open-Meteo |
+| `scenario.weather.random_seed` | No | Seed for reproducible synthetic weather |
+| `scenario.strategy.name` | Yes | `fixed`, `pi`, `stepped`, or `interval-hold` |
+| `scenario.strategy.fixed_speed_mps` | For `fixed` | Constant target speed in metres per second |
+| `scenario.strategy.aggressiveness` | No | Controller response strength |
+
+The example below uses synthetic (offline) weather and the `fixed` strategy with a constant speed. More examples are in `scenarios_examples/`
+
+```yaml
 scenario:
-  name: Shenandoah fixed-speed sweep
-  car_params: car_params.json
-  track: shenandoah_speedway
-
-  mode: sweep
+  name: Shenandoah offline constant-speed planning
+  car_parameter_file: car_params.json
+  course_file: courses/shenandoah_speedway.json
 
   race:
     start_time_hour: 10.0
@@ -128,46 +142,13 @@ scenario:
     min_soc: 0.10
 
   weather:
-    source: api
+    source: synthetic
+    random_seed: 7
 
   strategy:
     name: fixed
+    fixed_speed_mps: 15.0
     aggressiveness: 1.0
-
-  planning:
-    fixed_speed_values_mph: [18, 22, 26, 30, 34, 38]
-
-  simulation:
-    time_step_minutes: 1.0
-```
-
-2. Scenario 2: 
-    - Track: Brainerd
-    - Strategy: PI with aggressiveness = 0.9.
-
-```
-scenario:
-  name: Brainerd PI controller run
-  car_params: car_params.json
-  track: brainerd_international_raceway
-
-  mode: strategy
-
-  race:
-    start_time_hour: 10.0
-    end_time_hour: 18.0
-    start_soc: 1.0
-    target_soc: 0.10
-    min_soc: 0.10
-
-  strategy:
-    name: pi
-    aggressiveness: 0.9
-    min_speed_mps: 4.0
-    max_speed_mps: 35.0
-
-  weather:
-    source: api
 
   simulation:
     time_step_minutes: 1.0

@@ -1,0 +1,31 @@
+scenario:
+  name: Brainerd API strategy comparison
+  car_parameter_file: car_params.json
+  course_file: courses/brainerd_international_raceway.json
+
+  race:
+    start_time_hour: 10.0
+    end_time_hour: 18.0
+    start_soc: 1.0
+    target_soc: 0.10
+    min_soc: 0.10
+
+  weather:
+    source: api
+
+  planning:
+    enabled: true
+    strategies: [pi, stepped, interval-hold, fixed]
+    aggressiveness_by_strategy:
+      pi: 1.5
+      stepped: 1.2
+      interval-hold: 1.0
+      fixed: 1.0
+
+  strategy:
+    name: fixed
+    fixed_speed_mps: 15.0
+    aggressiveness: 1.0
+
+  simulation:
+    time_step_minutes: 1.0
