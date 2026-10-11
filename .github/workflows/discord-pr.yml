@@ -4,20 +4,10 @@ on:
   pull_request:
     types:
       - opened
-      - reopened
-      - ready_for_review
 
 jobs:
   discord-notification:
-    if: >
-      github.event.action == 'ready_for_review' ||
-      (
-        github.event.pull_request.draft == false &&
-        (
-          github.event.action == 'opened' ||
-          github.event.action == 'reopened'
-        )
-      )
+    if: github.event.pull_request.draft == false
 
     runs-on: ubuntu-latest
 
@@ -25,7 +15,6 @@ jobs:
       - name: Send Discord PR notification
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_PR_WEBHOOK }}
-          DISCORD_ROLE_ID: ${{ secrets.DISCORD_PR_REVIEW_ROLE }}
 
           REPO_NAME: ${{ github.event.repository.name }}
           REPO_URL: ${{ github.event.repository.html_url }}
@@ -73,7 +62,6 @@ jobs:
           deletions = os.environ["DELETIONS"]
           changed_files = os.environ["CHANGED_FILES"]
 
-          role = os.environ["DISCORD_ROLE_ID"]
           webhook = os.environ["DISCORD_WEBHOOK"]
           event_action = os.environ["EVENT_ACTION"]
 
@@ -117,26 +105,25 @@ jobs:
               }
           ]
 
-          payload = {
-              "content": f"<@&{role}> — PR ready for review",
-              "allowed_mentions": {
-                  "roles": [role],
-                  "parse": []
-              },
-              "embeds": [
-                  {
-                      "title": f"🔀 {repo} #{number} — {title}",
-                      "url": url,
-                      "description": f"PR #{number} is ready for review.",
-                      "author": {
-                          "name": author,
-                          "icon_url": avatar
-                      },
-                      "fields": fields
-                  }
-              ]
-          }
-
+            payload = {
+                "content": "New pull request opened!",
+                "allowed_mentions": {
+                    "parse": []
+                },
+                "embeds": [
+                    {
+                        "title": f"🔀 {repo} #{number} — {title}",
+                        "url": url,
+                        "description": f"PR #{number} is ready for review.",
+                        "author": {
+                            "name": author,
+                            "icon_url": avatar
+                        },
+                        "fields": fields
+                    }
+                ]
+            }
+        
           data = json.dumps(payload).encode("utf-8")
 
           request = urllib.request.Request(
