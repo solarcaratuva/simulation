@@ -48,3 +48,11 @@ def sort_planning_rows(rows: list[dict]) -> list[dict]:
         ),
         reverse=True,
     )
+
+# returns a tuple (feasible, score)
+# feasible: true or false
+# score = unitless numeric score
+def score_planning_row(row: dict):
+    feasible = check_feasibility(row) # race window
+
+
