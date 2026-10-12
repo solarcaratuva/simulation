@@ -5,7 +5,7 @@ on:
     types:
       - opened
       - synchronize
-
+      
 jobs:
   discord-notification:
     if: github.event.pull_request.draft == false
@@ -107,6 +107,7 @@ jobs:
           ]
 
             payload = {
+                "content": "",
                 "allowed_mentions": {
                     "parse": []
                 },
