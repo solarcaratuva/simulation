@@ -106,9 +106,9 @@ jobs:
               }
           ]
 
-            payload = {
-                "content": "",
-                "allowed_mentions": {
+          payload = {
+              "content": "",
+              "allowed_mentions": {
                     "parse": []
                 },
                 "embeds": [
