@@ -5,7 +5,12 @@ from pathlib import Path
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from sim.config import CarConfig, RaceConfig, get_available_tracks
+from sim.config import (
+    CarConfig,
+    RaceConfig,
+    get_available_tracks,
+    get_track_by_argument,
+)
 from sim.planning.sweep import (
     DEFAULT_AGGRESSIVENESS,
     SPEED_SWEEP_MPH,
@@ -22,11 +27,18 @@ STRATEGY_OPTIONS = ["pi", "stepped", "interval-hold", "fixed"]
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Modular laps race simulator")
+    try:
+        location_choices = [
+            track.file_path_name for track in get_available_tracks()
+        ]
+    except (FileNotFoundError, ValueError) as exc:
+        parser.error(f"Unable to load courses: {exc}")
+
     parser.add_argument(
         "--location",
-        choices=["shenandoah_speedway", "virginia_international_raceway", "brainerd_international_raceway"],
+        choices=location_choices,
         default=None,
-        help="Race location selection (currently only Shenandoah)",
+        help="Course identifier from the courses directory",
     )
     parser.add_argument(
         "--strategy",
@@ -153,8 +165,10 @@ def main():
         print("Using default car parameters")
 
     if args.location is not None:
-        track = next(track for track in tracks
-        if track.file_path_name == args.location)
+        try:
+            track = get_track_by_argument(args.location)
+        except (FileNotFoundError, ValueError) as exc:
+            raise SystemExit(f"Unable to select course: {exc}") from exc
     else:
         print("Choose a track to test on:")
         for i, available_track in enumerate(tracks, start=1):

@@ -7,7 +7,7 @@ This document separates inputs provided by a user from the configuration paramet
 | User input | How it is provided | Maps to |
 |---|---|---|
 | Car parameters | `car_params.json` | `CarConfig` |
-| Track | `--location` or prompt | `TrackConfig` |
+| Course | `--location` or prompt | JSON file in `courses/`, loaded as `TrackConfig` |
 | Strategy | `--strategy` or prompt | `RaceConfig.strategy` |
 | Aggressiveness | `--aggressiveness` | `RaceConfig.aggressiveness` |
 | Energy safety scale | Interactive prompt | `RaceConfig.energy_safety_scale` |
@@ -38,18 +38,36 @@ Source: `car_params.json`
 | `rho` | kg/m³ | Yes | Aerodynamic drag |
 | `g` | m/s² | Yes | Rolling resistance |
 
-### Track Configuration
+### Course Configuration
 
-| Parameter | Units | Required | Affects |
-|---|---:|---|---|
-| `name` | text | Yes | Report and plot labels |
-| `file_path_name` | text | Yes | Track identifier and output filenames |
-| `location` | text | Yes | Human-readable location |
+Course definitions are stored as separate JSON files in the repository's
+`courses/` directory. The simulator loads every `.json` file in that directory
+and uses `course_name_argument` as the value for `--location`. Course data is
+kept separate from car parameters, weather assumptions, and race strategy
+settings.
+
+See [course_format.md](course_format.md) for the complete file format.
+
+| JSON field | Units / type | Required | Affects |
+|---|---|---|---|
+| `course_name` | text | Yes | Report and plot labels |
+| `course_name_argument` | text | Yes | `--location` identifier and output filenames |
+| `lap_distance_m` | m | Yes | Internal distance and lap counting |
+| `total_laps` | positive integer or `null` | No | Reserved for future fixed-lap events; currently defaults to `null` |
+| `elevation` | text or `null` | No | Reserved for future elevation data |
+| `source` | text or `null` | No | Reserved for future course-source metadata |
+| `location` | text | Yes | Human-readable location in reports |
 | `latitude`, `longitude` | degrees | Yes | Weather API location |
-| `lap_distance_km` | km | Yes | Distance and lap count |
 | `timezone` | IANA timezone | Yes | Local race and weather times |
 
-Available track IDs: `shenandoah_speedway`, `virginia_international_raceway`, `brainerd_international_raceway`.
+The simulator stores and calculates course distance in meters. A derived
+`TrackConfig.lap_distance_km` property is available only for kilometer display.
+
+Current course identifiers are:
+
+- `shenandoah_speedway`
+- `virginia_international_raceway`
+- `brainerd_international_raceway`
 
 ### Race and Battery Conditions
 

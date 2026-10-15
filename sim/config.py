@@ -1,4 +1,5 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Dict, List, Optional
 import json
 import math
@@ -12,17 +13,62 @@ class TrackConfig:
     location: str
     latitude: float
     longitude: float
-    lap_distance_km: float
+    lap_distance_m: float
     timezone: str
-    lap_distance_m: float = field(init=False)
+    total_laps: Optional[int] = None
+    elevation: Optional[str] = None
+    source: Optional[str] = None
 
     def __post_init__(self):
-        self.lap_distance_m = self.lap_distance_km * 1000.0
         self.validate()
 
+    @property
+    def lap_distance_km(self) -> float:
+        return self.lap_distance_m / 1000.0
+
     def validate(self):
-        if self.lap_distance_km <= 0:
+        if self.lap_distance_m <= 0:
             raise ValueError("Lap distance must be greater than 0.")
+        if self.total_laps is not None and self.total_laps <= 0:
+            raise ValueError("Total laps must be greater than 0.")
+
+    @classmethod
+    def from_json(cls, filepath: str) -> "TrackConfig":
+        with open(filepath, "r") as f:
+            course = json.load(f)
+
+        required_fields = (
+            "course_name",
+            "course_name_argument",
+            "lap_distance_m",
+            "location",
+            "latitude",
+            "longitude",
+            "timezone",
+        )
+        missing_fields = [field for field in required_fields if field not in course]
+        if missing_fields:
+            raise ValueError(
+                f"Course file {filepath} is missing required fields: "
+                + ", ".join(missing_fields)
+            )
+
+        lap_distance_m = course["lap_distance_m"]
+        if not isinstance(lap_distance_m, (int, float)) or isinstance(lap_distance_m, bool):
+            raise ValueError("lap_distance_m must be a number.")
+
+        return cls(
+            name=course["course_name"],
+            file_path_name=course["course_name_argument"],
+            location=course["location"],
+            latitude=course["latitude"],
+            longitude=course["longitude"],
+            lap_distance_m=float(lap_distance_m),
+            timezone=course["timezone"],
+            total_laps=course.get("total_laps"),
+            elevation=course.get("elevation"),
+            source=course.get("source"),
+        )
 
 
 @dataclass
@@ -182,33 +228,26 @@ class SimulationResults:
     def min_speed_mph(self) -> float:
         return float(np.min(self.speed)) * 2.237
 
-def get_available_tracks() -> List[TrackConfig]:
-    return [
-        TrackConfig(
-            name="Shenandoah Speedway",
-            file_path_name="shenandoah_speedway",
-            location="Page County, Virginia",
-            latitude=38.5110,
-            longitude=-78.6359,
-            lap_distance_km=0.604,
-            timezone="America/New_York",
-        ),
-        TrackConfig(
-            name= "Virginia International Raceway (Patriot Course)",
-            file_path_name="virginia_international_raceway", 
-            location="Alton, Virginia",
-            latitude=36.5666,
-            longitude=-79.2058,
-            lap_distance_km=1.77,
-            timezone="America/New_York"
-        ),
-        TrackConfig(
-            name= "Brainerd International Raceway (Donnybrooke Course)",
-            file_path_name="brainerd_international_raceway",
-            location="Brainerd, Minnesota",
-            latitude=46.4176,
-            longitude=-94.2853,
-            lap_distance_km=4.989,
-            timezone="America/Chicago"
-        )
-    ]
+def get_available_tracks(courses_dir: Optional[str] = None) -> List[TrackConfig]:
+    course_directory = (
+        Path(courses_dir)
+        if courses_dir is not None
+        else Path(__file__).resolve().parents[1] / "courses"
+    )
+    course_files = sorted(course_directory.glob("*.json"))
+    if not course_files:
+        raise FileNotFoundError(f"No course JSON files found in {course_directory}")
+
+    return [TrackConfig.from_json(str(course_file)) for course_file in course_files]
+
+
+def get_track_by_argument(
+    course_name_argument: str, courses_dir: Optional[str] = None
+) -> TrackConfig:
+    tracks = get_available_tracks(courses_dir)
+    for track in tracks:
+        if track.file_path_name == course_name_argument:
+            return track
+
+    available = ", ".join(track.file_path_name for track in tracks)
+    raise ValueError(f"Unknown course '{course_name_argument}'. Available courses: {available}")

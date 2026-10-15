@@ -31,6 +31,6 @@ def test_invalid_track_config():
             location="test",
             latitude=0,
             longitude=0,
-            lap_distance_km=0,
+            lap_distance_m=0,
             timezone="UTC",
         )

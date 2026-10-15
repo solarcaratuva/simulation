@@ -26,7 +26,7 @@ class ResultsReporter:
 
         print(f"\nTrack: {self.track.name}")
         print(f"   Location: {self.track.location}")
-        print(f"   Lap Distance: {self.track.lap_distance_km:.3f} km ({self.track.lap_distance_km/1.609:.2f} miles)")
+        print(f"   Lap Distance: {self.track.lap_distance_km:.3f} km ({self.track.lap_distance_m/1609.34:.2f} miles)")
 
         print("\nRace Results:")
         print(f"   Total Laps Completed: {r.total_laps}")
