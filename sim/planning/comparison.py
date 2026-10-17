@@ -42,7 +42,7 @@ def sort_planning_rows(rows: list[dict]) -> list[dict]:
     return sorted(
         rows,
         key=lambda row: (
-            row["completed_full_window"],
+            row["feasibility"],
             row["score"]
         ),
         reverse=True,
