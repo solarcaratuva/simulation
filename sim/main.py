@@ -3,6 +3,8 @@ import os
 import sys
 from pathlib import Path
 
+from sim.planning.comparison import score_planning_rows
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sim.config import CarConfig, RaceConfig, get_available_tracks
@@ -97,6 +99,7 @@ def run_speed_sweep(track, car, args):
         speeds_mph=SPEED_SWEEP_MPH,
         use_api_weather=True,
     )
+    rows = score_planning_rows(rows)
 
     print_speed_sweep_summary(rows)
 
