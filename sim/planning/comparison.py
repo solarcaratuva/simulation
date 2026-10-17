@@ -49,10 +49,52 @@ def sort_planning_rows(rows: list[dict]) -> list[dict]:
         reverse=True,
     )
 
-# returns a tuple (feasible, score)
-# feasible: true or false
-# score = unitless numeric score
-def score_planning_row(row: dict):
-    feasible = check_feasibility(row) # race window
+def score_planning_rows(rows: list[dict]):
+    import json
+    from pathlib import Path
 
+    with (Path(__file__).parent / "config.json").open(encoding="utf-8") as config_file:
+        config = json.load(config_file)
+
+    laps_weight = config["weights"]["laps"]
+    minimize_soc_margin_weight = config["weights"]["minimize_soc_margin"]
+
+    realistic_speed = config["realistic_speed"]
+    realistic_speed_value = realistic_speed["value"]
+    realistic_speed_acceptable_range = realistic_speed["acceptable_range"]
+    realistic_speed_penalty = realistic_speed["penalty"]
+
+    study_handicaps = {
+        study: handicap
+        for study, handicap in config["study_handicaps"].items()
+        if not study.startswith("_")
+    }
+
+    if not rows:
+        return rows
+
+    most_laps = max((row.get("laps", 0) for row in rows), default=0)
+    min_realistic_speed = realistic_speed_value - realistic_speed_acceptable_range
+    max_realistic_speed = realistic_speed_value + realistic_speed_acceptable_range
+
+    for row in rows:
+        # general score calc
+        lap_score = row["laps"] / most_laps * 100 if most_laps else 0
+        soc_score = 100 - row["soc_margin_pct"]
+        score = lap_score * laps_weight + soc_score * minimize_soc_margin_weight
+
+        # penalty for speeds that aren't... that realistic
+        avg_speed = row.get("avg_speed_mph")
+        if avg_speed is not None and not min_realistic_speed <= avg_speed <= max_realistic_speed:
+            score -= realistic_speed_penalty
+
+        # attempt to get the study name, could be under strategy or study
+        handicap_key = row.get("strategy")
+        if handicap_key not in study_handicaps:
+            handicap_key = row.get("study")
+
+        score -= study_handicaps.get(handicap_key, 0)
+        row["score"] = score
+
+    return rows
 
