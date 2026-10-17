@@ -1,0 +1,21 @@
+{
+  "weights": {
+    "_comment": "Weights should add up to 1",
+    "laps": 0.5,
+    "minimize_soc_margin": 0.5
+  },
+
+  "realistic_speed": {
+    "_comment": "Sets typical speed - if speed is beyond higher or lower the acceptable range, subtract penalty from score",
+    "value": 25,
+    "acceptable_range": 5,
+    "penalty": 5
+  },
+
+  "study_handicaps": {
+    "_comment": "Custom score adjustments for specific strategies w/o fixed speeds",
+    "pi": 0,
+    "stepped": 0,
+    "interval-hold": 0
+  }
+}
