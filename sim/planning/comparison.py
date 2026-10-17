@@ -48,12 +48,13 @@ def sort_planning_rows(rows: list[dict]) -> list[dict]:
         reverse=True,
     )
 
-def score_planning_rows(rows: list[dict]):
+def score_planning_rows(rows: list[dict], config: dict = None):
     import json
     from pathlib import Path
 
-    with (Path(__file__).parent / "config.json").open(encoding="utf-8") as config_file:
-        config = json.load(config_file)
+    if config is None:
+        with (Path(__file__).parent / "config.json").open(encoding="utf-8") as config_file:
+            config = json.load(config_file)
 
     laps_weight = config["weights"]["laps"]
     minimize_soc_margin_weight = config["weights"]["minimize_soc_margin"]
