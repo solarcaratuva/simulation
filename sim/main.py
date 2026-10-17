@@ -208,8 +208,7 @@ def main():
 
         output_path = os.path.join(os.getcwd(), "csv/")
         export_planning_report_to_csv(
-            fixed_speed_rows=fixed_speed_rows,
-            strategy_rows=strategy_rows,
+            rows=fixed_speed_rows + strategy_rows,
             output_dir=output_path,
         )
         return
