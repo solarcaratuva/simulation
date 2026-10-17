@@ -115,6 +115,9 @@ def run_speed_sweep(track, car, args):
             f" {row['laps']:>4} | {row['distance_miles']:>13.1f} | {cutoff:>22} | {'Yes' if row['feasibility'] else 'No'}"
         )
 
+    output_path = os.path.join(os.getcwd(), "csv/")
+    export_planning_report_to_csv(rows=rows, output_dir=output_path)
+
 def print_speed_sweep_summary(rows):
     print("\nSpeed sweep results:")
 
