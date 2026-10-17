@@ -43,8 +43,7 @@ def sort_planning_rows(rows: list[dict]) -> list[dict]:
         rows,
         key=lambda row: (
             row["completed_full_window"],
-            row["laps"],
-            row["final_soc_pct"],
+            row["score"]
         ),
         reverse=True,
     )
@@ -64,10 +63,10 @@ def score_planning_rows(rows: list[dict]):
     realistic_speed_acceptable_range = realistic_speed["acceptable_range"]
     realistic_speed_penalty = realistic_speed["penalty"]
 
-    study_handicaps = {
-        study: handicap
-        for study, handicap in config["study_handicaps"].items()
-        if not study.startswith("_")
+    strategy_adjustments = {
+        strategy: adjustment
+        for strategy, adjustment in config["strategy_adjustments"].items()
+        if not strategy.startswith("_")
     }
 
     if not rows:
@@ -87,14 +86,17 @@ def score_planning_rows(rows: list[dict]):
         avg_speed = row.get("avg_speed_mph")
         if avg_speed is not None and not min_realistic_speed <= avg_speed <= max_realistic_speed:
             score -= realistic_speed_penalty
+            row['realistic_speed_penalty'] = True
+        else:
+            row['realistic_speed_penalty'] = False
 
-        # attempt to get the study name, could be under strategy or study
-        handicap_key = row.get("strategy")
-        if handicap_key not in study_handicaps:
-            handicap_key = row.get("study")
+        # attempt to get the strategy name, could be under strategy or strategy
+        strategy_key = row.get("strategy")
+        if strategy_key not in strategy_adjustments:
+            strategy_key = row.get("strategy")
 
-        score -= study_handicaps.get(handicap_key, 0)
+        row['strategy_adjustment'] = strategy_adjustments.get(strategy_key, 0)
+        score += strategy_adjustments.get(strategy_key, 0)
         row["score"] = score
-
     return rows
 
