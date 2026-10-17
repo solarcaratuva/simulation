@@ -77,3 +77,27 @@ def print_planning_report(
             f"  Expected result: {best_row['laps']} laps, "
             f"{best_row['final_soc_pct']:.1f}% final SoC."
         )
+
+def export_planning_report_to_csv(
+    *,
+    rows: list[dict],
+    output_dir: str,
+    file_name: str = "planning_report.csv",
+) -> None:
+
+    import csv
+    import os.path
+
+    if not rows:
+        return
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    fieldnames = rows[0].keys()
+    with open(os.path.join(output_dir, file_name), mode='w', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+    print(f"Planning report CSV exported to {output_dir}")
