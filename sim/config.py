@@ -5,6 +5,8 @@ import json
 import math
 import numpy as np
 
+from sim.units import meters_to_km, meters_to_miles, mps_to_mph
+
 
 @dataclass
 class TrackConfig:
@@ -24,7 +26,7 @@ class TrackConfig:
 
     @property
     def lap_distance_km(self) -> float:
-        return self.lap_distance_m / 1000.0
+        return meters_to_km(self.lap_distance_m)
 
     def validate(self):
         if self.lap_distance_m <= 0:
@@ -186,11 +188,11 @@ class SimulationResults:
 
     @property
     def total_distance_km(self) -> float:
-        return self.total_distance_m / 1000.0
+        return meters_to_km(self.total_distance_m)
 
     @property
     def total_distance_miles(self) -> float:
-        return self.total_distance_m / 1609.34
+        return meters_to_miles(self.total_distance_m)
 
     @property
     def avg_speed_mps(self) -> float:
@@ -198,7 +200,7 @@ class SimulationResults:
 
     @property
     def avg_speed_mph(self) -> float:
-        return self.avg_speed_mps * 2.237
+        return mps_to_mph(self.avg_speed_mps)
 
     @property
     def final_soc(self) -> float:
@@ -222,11 +224,11 @@ class SimulationResults:
 
     @property
     def max_speed_mph(self) -> float:
-        return float(np.max(self.speed)) * 2.237
+        return mps_to_mph(float(np.max(self.speed)))
 
     @property
     def min_speed_mph(self) -> float:
-        return float(np.min(self.speed)) * 2.237
+        return mps_to_mph(float(np.min(self.speed)))
 
 def get_available_tracks(courses_dir: Optional[str] = None) -> List[TrackConfig]:
     course_directory = (

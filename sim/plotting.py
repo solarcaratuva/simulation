@@ -3,6 +3,8 @@ from typing import Optional
 import numpy as np
 import matplotlib.pyplot as plt
 
+from sim.units import mps_to_mph
+
 
 class SimulationPlotter:
     def __init__(self, results, track):
@@ -36,7 +38,7 @@ class SimulationPlotter:
     def plot_speed(self, save_path: Optional[str] = None, show: bool = False):
         fig, ax = plt.subplots(figsize=(10, 5))
         hours = self._time_to_hours()
-        speed_mph = self.results.speed * 2.237
+        speed_mph = mps_to_mph(self.results.speed)
 
         ax.plot(hours, speed_mph, color="green", linewidth=1.5)
         ax.axhline(y=np.mean(speed_mph), color="red", linestyle="--", label=f"Average: {np.mean(speed_mph):.1f} mph", alpha=0.7)
@@ -93,7 +95,7 @@ class SimulationPlotter:
         ax1.set_ylim(0, 105)
 
         ax2 = fig.add_subplot(gs[0, 1])
-        speed_mph = self.results.speed * 2.237
+        speed_mph = mps_to_mph(self.results.speed)
         ax2.plot(hours, speed_mph, color="green", linewidth=1.5)
         ax2.axhline(y=np.mean(speed_mph), color="red", linestyle="--", alpha=0.7)
         ax2.set_ylabel("Speed (mph)")
@@ -134,8 +136,8 @@ Final SoC: {self.results.final_soc*100:.1f}%
 
 Speed Statistics:
   Average: {self.results.avg_speed_mph:.1f} mph
-  Max: {np.max(self.results.speed)*2.237:.1f} mph
-  Min: {np.min(self.results.speed)*2.237:.1f} mph
+  Max: {mps_to_mph(np.max(self.results.speed)):.1f} mph
+  Min: {mps_to_mph(np.min(self.results.speed)):.1f} mph
 """
         ax6.text(
             0.1,

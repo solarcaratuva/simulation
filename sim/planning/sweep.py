@@ -4,9 +4,9 @@ import numpy as np
 
 from sim.planning.comparison import build_comparison_row
 from sim.simulator import LapsRaceSimulator
+from sim.units import mph_to_mps
 
 
-MPH_TO_MPS = 1 / 2.237
 SPEED_SWEEP_MPH = list(range(10, 47, 2))
 
 DEFAULT_AGGRESSIVENESS = {
@@ -29,7 +29,7 @@ def run_fixed_speed_sweep(
     rows = []
 
     for mph in speeds_mph:
-        fixed_speed_mps = mph * MPH_TO_MPS
+        fixed_speed_mps = mph_to_mps(mph)
         race = replace(
             base_race,
             strategy="fixed",
