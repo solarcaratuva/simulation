@@ -87,6 +87,15 @@ python3 sim/main.py --strategy stepped --aggressiveness 1.0
 python3 sim/main.py --strategy fixed
 ```
 
+Run offline (no weather API calls, uses synthetic weather). Works with the
+single run, `--plan`, and `--speed-sweep`:
+
+```bash
+python3 sim/main.py --no-api-weather
+python3 sim/main.py --plan --no-api-weather
+python3 sim/main.py --speed-sweep --no-api-weather
+```
+
 ## Core Concepts
 
 ### Race Simulation
@@ -135,6 +144,9 @@ assumptions.
 
 The simulator tries to use forecast data from Open-Meteo. If weather data cannot
 be fetched, it falls back to generated synthetic weather.
+
+Pass `--no-api-weather` to skip the API entirely and always use synthetic
+weather.
 
 This fallback is useful for development and offline testing, but real planning
 should use the best available forecast and should eventually include uncertainty
