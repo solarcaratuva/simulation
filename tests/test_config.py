@@ -28,6 +28,7 @@ def test_invalid_track_config():
     with pytest.raises(ValueError, match="Lap distance must be greater than 0."):
         TrackConfig(
             name="test",
+            file_path_name="test",
             location="test",
             latitude=0,
             longitude=0,
