@@ -73,6 +73,11 @@ def parse_args():
         help="Run pre-race planning study with fixed-speed and strategy comparisons",
     )
     parser.add_argument(
+        "--no-api-weather",
+        action="store_true",
+        help="Use synthetic weather instead of calling the Open-Meteo API (offline mode)",
+    )
+    parser.add_argument(
         "--time-step-minutes",
         type=positive_float,
         default=1.0,
@@ -123,7 +128,7 @@ def run_speed_sweep(track, car, args):
         car=car,
         base_race=base_race,
         speeds_mph=SPEED_SWEEP_MPH,
-        use_api_weather=True,
+        use_api_weather=not args.no_api_weather,
     )
 
     print_speed_sweep_summary(rows)
@@ -218,7 +223,7 @@ def main():
             car=car,
             base_race=base_race,
             speeds_mph=SPEED_SWEEP_MPH,
-            use_api_weather=True,
+            use_api_weather=not args.no_api_weather,
         )
         strategy_rows = run_strategy_sweep(
             track=track,
@@ -226,7 +231,7 @@ def main():
             base_race=base_race,
             strategies=STRATEGY_OPTIONS,
             aggressiveness_by_strategy=DEFAULT_AGGRESSIVENESS,
-            use_api_weather=True,
+            use_api_weather=not args.no_api_weather,
         )
         print_planning_report(
             track=track,
@@ -285,7 +290,7 @@ def main():
         track=track,
         car=car,
         race=race,
-        use_api_weather=True,
+        use_api_weather=not args.no_api_weather,
     )
     results = simulator.run()
 
