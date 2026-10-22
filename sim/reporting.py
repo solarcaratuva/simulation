@@ -1,4 +1,5 @@
 import numpy as np
+from sim.units import meters_to_miles, mps_to_mph
 
 
 class ResultsReporter:
@@ -26,7 +27,7 @@ class ResultsReporter:
 
         print(f"\nTrack: {self.track.name}")
         print(f"   Location: {self.track.location}")
-        print(f"   Lap Distance: {self.track.lap_distance_km:.3f} km ({self.track.lap_distance_m/1609.34:.2f} miles)")
+        print(f"   Lap Distance: {self.track.lap_distance_km:.3f} km ({meters_to_miles(self.track.lap_distance_m):.2f} miles)")
 
         print("\nRace Results:")
         print(f"   Total Laps Completed: {r.total_laps}")
@@ -50,8 +51,8 @@ class ResultsReporter:
 
         print("\nSpeed:")
         print(f"   Average: {r.avg_speed_mps:.2f} m/s ({r.avg_speed_mph:.1f} mph)")
-        print(f"   Maximum: {np.max(r.speed):.2f} m/s ({np.max(r.speed)*2.237:.1f} mph)")
-        print(f"   Minimum: {np.min(r.speed):.2f} m/s ({np.min(r.speed)*2.237:.1f} mph)")
+        print(f"   Maximum: {np.max(r.speed):.2f} m/s ({mps_to_mph(np.max(r.speed)):.1f} mph)")
+        print(f"   Minimum: {np.min(r.speed):.2f} m/s ({mps_to_mph(np.min(r.speed)):.1f} mph)")
 
         if r.lap_times:
             print("\nLap Times (minutes):")
