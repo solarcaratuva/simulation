@@ -360,3 +360,59 @@ class TestCliTimeStep:
         monkeypatch.setattr(WeatherService, "fetch_weather_data", lambda *a: (_ for _ in ()).throw(ConnectionError("offline")))
         cli.main()
         assert "1 speeds were tested" in capsys.readouterr().out
+
+
+class TestNonDivisibleStepsEndAtWindowEnd:
+    """Review feedback on #8: a step that doesn't divide the window must not overrun it."""
+
+    END_MINUTE = 18 * 60
+    NON_DIVISIBLE = [7.0, 11.0, 13.0, 0.7, 2.5, 100.0, 479.0]
+    ALL_STEPS = [1.0, 2.0, 5.0, 10.0] + NON_DIVISIBLE
+
+    @pytest.mark.parametrize("step", ALL_STEPS)
+    def test_race_ends_exactly_at_window_end(self, track, step):
+        r = run_sim(track, step, car=BIG_BATTERY)
+        assert r.completed_full_window
+        assert r.time_minutes[-1] == pytest.approx(self.END_MINUTE)
+
+    @pytest.mark.parametrize("step", ALL_STEPS)
+    def test_fixed_speed_distance_is_speed_times_window(self, track, step):
+        race_kwargs = dict(fixed_speed_mps=15.0)
+        r = run_sim(track, step, car=BIG_BATTERY, **race_kwargs)
+        assert r.total_distance_m == pytest.approx(15.0 * WINDOW_MINUTES * 60)
+
+    @pytest.mark.parametrize("step", ALL_STEPS)
+    def test_energy_used_is_independent_of_step(self, track, step):
+        # No solar and constant speed: SoC drop is exactly power * duration / capacity.
+        car = CarConfig(battery_capacity=50_000, solar_panel_area=0)
+        r = run_sim(track, step, car=car, fixed_speed_mps=15.0)
+        from sim.physics import PhysicsEngine
+        power_w = PhysicsEngine(car).power_drained(15.0)
+        expected_soc = 1.0 - power_w * (WINDOW_MINUTES / 60.0) / car.battery_capacity
+        assert r.completed_full_window
+        assert r.final_soc == pytest.approx(expected_soc, abs=1e-9)
+
+    @pytest.mark.parametrize("strategy", STRATEGIES)
+    @pytest.mark.parametrize("step", [7.0, 13.0])
+    def test_every_strategy_ends_at_window_end(self, track, strategy, step):
+        r = run_sim(track, step, strategy, car=BIG_BATTERY)
+        assert r.time_minutes[-1] == pytest.approx(self.END_MINUTE)
+
+    def test_divisible_steps_are_unaffected(self, track):
+        for step in (1.0, 2.0, 5.0, 10.0):
+            r = run_sim(track, step, car=BIG_BATTERY)
+            np.testing.assert_allclose(np.diff(r.time_minutes), step)
+
+    def test_only_the_last_step_is_shortened(self, track):
+        r = run_sim(track, 7.0, car=BIG_BATTERY)
+        diffs = np.diff(r.time_minutes)
+        np.testing.assert_allclose(diffs[:-1], 7.0)
+        assert diffs[-1] == pytest.approx(WINDOW_MINUTES - 68 * 7.0)  # 4 min
+
+    def test_stopping_early_still_reports_correct_time(self, track):
+        base = run_sim(track, 1.0)  # default battery runs out before the window ends
+        other = run_sim(track, 7.0)
+        assert not other.completed_full_window
+        assert other.reached_min_soc_time_minutes == pytest.approx(
+            base.reached_min_soc_time_minutes, abs=14.0
+        )
