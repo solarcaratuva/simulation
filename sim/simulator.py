@@ -2,6 +2,7 @@ from sim.config import SimulationResults
 from sim.physics import PhysicsEngine
 from sim.weather import WeatherService
 from sim.controllers import build_strategy
+from sim.units import minutes_to_hours, minutes_to_seconds, mps_to_mph
 import numpy as np
 
 
@@ -27,11 +28,11 @@ class LapsRaceSimulator:
             time_minutes, ghi_data, cloud_data = self.weather.generate_synthetic_data(self.race)
 
         dt_minutes = self.race.time_step_minutes
-        dt_hours = dt_minutes / 60.0
+        dt_hours = minutes_to_hours(dt_minutes)
 
         self.strategy.prepare(self.physics, ghi_data, cloud_data, dt_hours)
         ideal_soc = self.strategy.ideal_soc
-        print(f"   Optimal constant speed baseline: {self.strategy.optimal_speed:.2f} m/s ({self.strategy.optimal_speed*2.237:.1f} mph)")
+        print(f"   Optimal constant speed baseline: {self.strategy.optimal_speed:.2f} m/s ({mps_to_mph(self.strategy.optimal_speed):.1f} mph)")
 
         n_steps = len(time_minutes)
         # A step that doesn't divide the window leaves a shorter final step.
@@ -61,7 +62,7 @@ class LapsRaceSimulator:
             step_minutes = dt_minutes
             if window_end_minutes is not None:
                 step_minutes = min(dt_minutes, window_end_minutes - time_minutes[i])
-            step_hours = step_minutes / 60.0
+            step_hours = minutes_to_hours(step_minutes)
 
             ghi = max(ghi_data[i], 0)
             cloud = cloud_data[i]
@@ -86,7 +87,7 @@ class LapsRaceSimulator:
             else:
                 soc = float(np.clip(next_soc, self.race.min_soc, 1.0))
 
-            distance_step = speed * (step_minutes * 60) * step_fraction
+            distance_step = speed * minutes_to_seconds(step_minutes) * step_fraction
             step_start = time_minutes[i]
             step_duration = step_minutes * step_fraction
             carry = current_lap_distance  # distance already covered on the current lap

@@ -1,5 +1,5 @@
 from sim.config import RaceConfig, CarConfig
-from sim.planning.comparison import sort_planning_rows
+from sim.planning.comparison import sort_planning_rows, score_planning_rows
 
 
 def print_planning_report(
@@ -11,6 +11,7 @@ def print_planning_report(
     car_config: CarConfig,
 ) -> None:
     combined_rows = fixed_speed_rows + strategy_rows
+    combined_rows = score_planning_rows(combined_rows)
     best_fixed_speed_row = (
         sort_planning_rows(fixed_speed_rows)[0]
         if fixed_speed_rows
@@ -73,7 +74,35 @@ def print_planning_report(
         print("  No planning rows provided.")
     else:
         print(f"  Use {best_row['label']}.")
+        print()
         print(
-            f"  Expected result: {best_row['laps']} laps, "
-            f"{best_row['final_soc_pct']:.1f}% final SoC."
+            f"  Expected result: {best_row['laps']} laps\n"
+            f"  {best_row['soc_margin_pct']:.1f} SoC margin (%)\n"
+            f"  Penalized for unrealistic speed: {best_row['realistic_speed_penalty']}\n"
+            f"  Strategy adjustment to score: {best_row['strategy_adjustment']}\n"
+            f"  Overall score: {best_row['score']:.2f}\n"
         )
+
+def export_planning_report_to_csv(
+    *,
+    rows: list[dict],
+    output_dir: str,
+    file_name: str = "planning_report.csv",
+) -> None:
+
+    import csv
+    import os.path
+
+    if not rows:
+        return
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    fieldnames = rows[0].keys()
+    with open(os.path.join(output_dir, file_name), mode='w', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        for row in rows:
+            writer.writerow(row)
+
+    print(f"Planning report CSV exported to {output_dir}")

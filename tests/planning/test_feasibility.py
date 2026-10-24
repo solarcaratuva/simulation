@@ -40,3 +40,14 @@ class TestFeasibility(unittest.TestCase):
         }
 
         self.assertTrue(check_feasibility(row))
+
+    def test_hit_min_soc(self):
+        row = {
+            "min_soc_pct": 40.0,
+            "final_soc_pct": 40.0,
+            "target_soc_pct": 50.0,
+            "completed_full_window": False,
+            "hit_min_soc": True
+        }
+
+        self.assertFalse(check_feasibility(row))
