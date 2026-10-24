@@ -6,6 +6,35 @@ import openmeteo_requests
 import requests_cache
 
 
+def resample_to_time_step(time_minutes, ghi_data, cloud_data, step_minutes: float):
+    """Resample 1-minute weather arrays onto the simulator's time step.
+
+    The simulator advances one array element per step, so the weather arrays must
+    be spaced `step_minutes` apart. Steps of 1 minute return the inputs unchanged.
+    Coarser steps average the minutes inside each step (preserving solar energy);
+    finer steps linearly interpolate.
+    """
+    if step_minutes == 1.0:
+        return time_minutes, ghi_data, cloud_data
+
+    start, end = time_minutes[0], time_minutes[-1] + 1.0
+    new_times = np.arange(start, end, step_minutes)
+
+    if step_minutes > 1.0:
+        bins = np.minimum(np.floor((time_minutes - start) / step_minutes).astype(int), len(new_times) - 1)
+        counts = np.bincount(bins, minlength=len(new_times))
+        ghi = np.bincount(bins, weights=ghi_data, minlength=len(new_times))
+        cloud = np.bincount(bins, weights=cloud_data, minlength=len(new_times))
+        # A non-integer step can leave an empty bin past the last sample; drop it.
+        keep = counts > 0
+        new_times, ghi, cloud = new_times[keep], ghi[keep] / counts[keep], cloud[keep] / counts[keep]
+    else:
+        ghi = np.interp(new_times, time_minutes, ghi_data)
+        cloud = np.interp(new_times, time_minutes, cloud_data)
+
+    return new_times, ghi, cloud
+
+
 class WeatherService:
     def __init__(self, track):
         self.track = track
@@ -86,7 +115,9 @@ class WeatherService:
         ghi_data = np.clip(minute_df["ghi"].to_numpy(), 0, None)
         cloud_data = minute_df["cloud_cover"].to_numpy() / 100.0
 
-        return time_minutes, ghi_data, cloud_data
+        return resample_to_time_step(
+            time_minutes, ghi_data, cloud_data, race_config.time_step_minutes
+        )
 
     def generate_synthetic_data(self, race_config) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         start_min = int(race_config.start_time_hour * 60)
@@ -105,4 +136,6 @@ class WeatherService:
         cloud_data = np.clip(0.3 + 0.3 * np.random.randn(len(time_minutes)), 0, 1)
         cloud_data = np.convolve(cloud_data, np.ones(30) / 30, mode="same")
 
-        return time_minutes, ghi_data, cloud_data
+        return resample_to_time_step(
+            time_minutes, ghi_data, cloud_data, race_config.time_step_minutes
+        )
