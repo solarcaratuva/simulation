@@ -5,6 +5,8 @@ import pandas as pd
 import openmeteo_requests
 import requests_cache
 
+DEFAULT_SYNTHETIC_SEED = 7
+
 
 class WeatherService:
     def __init__(self, track):
@@ -88,21 +90,42 @@ class WeatherService:
 
         return time_minutes, ghi_data, cloud_data
 
-    def generate_synthetic_data(self, race_config) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def generate_synthetic_data(
+        self, race_config, seed: int = DEFAULT_SYNTHETIC_SEED
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Offline weather profile. Deterministic: the same race window and seed give the same arrays."""
         start_min = int(race_config.start_time_hour * 60)
         end_min = int(race_config.end_time_hour * 60)
+        if end_min <= start_min:
+            raise ValueError(
+                f"Race window must contain at least one minute (start={start_min} min, end={end_min} min)"
+            )
         time_minutes = np.arange(start_min, end_min)
+
+        # Local generator so the global np.random state is neither read nor modified.
+        rng = np.random.RandomState(seed)
 
         t_peak = 13 * 60
         peak_ghi = 900
-        a = peak_ghi / ((t_peak - start_min) ** 2)
+        half_width = abs(t_peak - start_min) or (end_min - start_min)
+        a = peak_ghi / (half_width**2)
         ghi_data = np.maximum(0, -a * (time_minutes - t_peak) ** 2 + peak_ghi)
 
-        noise = np.clip(np.random.normal(1.0, 0.1, len(ghi_data)), 0.7, 1.2)
-        smooth_noise = np.convolve(noise, np.ones(15) / 15, mode="same")
-        ghi_data = ghi_data * smooth_noise
+        noise = np.clip(rng.normal(1.0, 0.1, len(ghi_data)), 0.7, 1.2)
+        ghi_data = ghi_data * _moving_average(noise, 15)
 
-        cloud_data = np.clip(0.3 + 0.3 * np.random.randn(len(time_minutes)), 0, 1)
-        cloud_data = np.convolve(cloud_data, np.ones(30) / 30, mode="same")
+        cloud_data = np.clip(0.3 + 0.3 * rng.randn(len(time_minutes)), 0, 1)
+        cloud_data = _moving_average(cloud_data, 30)
 
         return time_minutes, ghi_data, cloud_data
+
+
+def _moving_average(values: np.ndarray, window: int) -> np.ndarray:
+    """Zero-padded moving average that always returns len(values) samples.
+
+    Equals np.convolve(values, ones(window)/window, mode="same") when len(values) >= window;
+    np.convolve returns max(len(values), window) samples, which breaks short race windows.
+    """
+    full = np.convolve(values, np.ones(window) / window, mode="full")
+    offset = (window - 1) // 2
+    return full[offset : offset + len(values)]

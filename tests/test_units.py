@@ -125,7 +125,7 @@ class TestCallersUseTheHelpers:
         seen = []
 
         class FakeSim:
-            def __init__(self, track, car, race, use_api_weather=True):
+            def __init__(self, track, car, race, use_api_weather=True, synthetic_weather_seed=None):
                 seen.append(race.fixed_speed_mps)
 
             def run(self):

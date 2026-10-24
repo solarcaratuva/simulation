@@ -1,7 +1,5 @@
 from dataclasses import replace
 
-import numpy as np
-
 from sim.planning.comparison import build_comparison_row
 from sim.simulator import LapsRaceSimulator
 from sim.units import mph_to_mps
@@ -41,8 +39,8 @@ def run_fixed_speed_sweep(
             car=car,
             race=race,
             use_api_weather=use_api_weather,
+            synthetic_weather_seed=synthetic_weather_seed,
         )
-        np.random.seed(synthetic_weather_seed)
         results = simulator.run()
 
         row = build_comparison_row(
@@ -85,8 +83,8 @@ def run_strategy_sweep(
             car=car,
             race=race,
             use_api_weather=use_api_weather,
+            synthetic_weather_seed=synthetic_weather_seed,
         )
-        np.random.seed(synthetic_weather_seed)
         results = simulator.run()
         rows.append(build_comparison_row(strategy, race, car, results, study="strategy"))
 
