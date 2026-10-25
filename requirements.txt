@@ -9,5 +9,5 @@ openmeteo_requests
 pandas
 requests_cache
 scipy
-
+PyYAML
 

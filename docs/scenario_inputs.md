@@ -144,7 +144,7 @@ Each scenario file contains:
 | `scenario.strategy.fixed_speed_mps` | For `fixed` | Constant target speed in metres per second |
 | `scenario.strategy.aggressiveness` | No | Controller response strength |
 
-The example below uses synthetic (offline) weather and the `fixed` strategy with a constant speed. More examples are in `scenarios_examples/`
+The example below uses synthetic (offline) weather and the `fixed` strategy with a constant speed. More configs are in `Simulator/scenarios/`
 
 ```yaml
 scenario:
