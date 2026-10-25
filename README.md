@@ -87,6 +87,14 @@ python3 sim/main.py --strategy stepped --aggressiveness 1.0
 python3 sim/main.py --strategy fixed
 ```
 
+Change the simulation time step (default 1 minute). Weather data is resampled to
+match, so results stay consistent across steps while larger steps run faster:
+
+```bash
+python3 sim/main.py --time-step-minutes 5
+python3 sim/main.py --plan --time-step-minutes 2
+```
+
 Run offline (no weather API calls, uses synthetic weather). Works with the
 single run, `--plan`, and `--speed-sweep`:
 
