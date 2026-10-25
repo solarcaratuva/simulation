@@ -55,7 +55,7 @@ pip install -r requirements.txt
 Run the main simulator CLI:
 
 ```bash
-python3 sim/main.py
+python3 -m sim.main
 ```
 
 You will be prompted to choose a track and strategy. The simulator will run one
@@ -64,44 +64,44 @@ race simulation, print a summary, and save plots.
 Run the pre-race planning workflow:
 
 ```bash
-python3 sim/main.py --plan
+python3 -m sim.main --plan
 ```
 
 Run only the fixed-speed sweep:
 
 ```bash
-python3 sim/main.py --speed-sweep
+python3 -m sim.main --speed-sweep
 ```
 
 Run a specific strategy:
 
 ```bash
-python3 sim/main.py --strategy interval-hold
+python3 -m sim.main --strategy interval-hold
 ```
 
 Other examples:
 
 ```bash
-python3 sim/main.py --strategy pi --aggressiveness 0.9
-python3 sim/main.py --strategy stepped --aggressiveness 1.0
-python3 sim/main.py --strategy fixed
+python3 -m sim.main --strategy pi --aggressiveness 0.9
+python3 -m sim.main --strategy stepped --aggressiveness 1.0
+python3 -m sim.main --strategy fixed
 ```
 
 Change the simulation time step (default 1 minute). Weather data is resampled to
 match, so results stay consistent across steps while larger steps run faster:
 
 ```bash
-python3 sim/main.py --time-step-minutes 5
-python3 sim/main.py --plan --time-step-minutes 2
+python3 -m sim.main --time-step-minutes 5
+python3 -m sim.main --plan --time-step-minutes 2
 ```
 
 Run offline (no weather API calls, uses synthetic weather). Works with the
 single run, `--plan`, and `--speed-sweep`:
 
 ```bash
-python3 sim/main.py --no-api-weather
-python3 sim/main.py --plan --no-api-weather
-python3 sim/main.py --speed-sweep --no-api-weather
+python3 -m sim.main --no-api-weather
+python3 -m sim.main --plan --no-api-weather
+python3 -m sim.main --speed-sweep --no-api-weather
 ```
 
 ## Core Concepts
@@ -233,13 +233,13 @@ python3 -m compileall sim
 Run planning mode with the default track selection:
 
 ```bash
-printf '\n' | python3 sim/main.py --plan
+printf '\n' | python3 -m sim.main --plan
 ```
 
 Run a fixed-speed sweep using the first track:
 
 ```bash
-printf '1\n' | python3 sim/main.py --speed-sweep
+printf '1\n' | python3 -m sim.main --speed-sweep
 ```
 
 ## Code Organization
