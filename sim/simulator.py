@@ -36,6 +36,10 @@ class LapsRaceSimulator:
         print(f"   Optimal constant speed baseline: {self.strategy.optimal_speed:.2f} m/s ({mps_to_mph(self.strategy.optimal_speed):.1f} mph)")
 
         n_steps = len(time_minutes)
+        # A step that doesn't divide the window leaves a shorter final step.
+        window_end_minutes = getattr(self.race, "end_time_hour", None)
+        if window_end_minutes is not None:
+            window_end_minutes *= 60.0
         soc = self.race.start_soc
         speed = self.strategy.optimal_speed
         total_distance = 0.0
@@ -56,6 +60,11 @@ class LapsRaceSimulator:
         lap_start_time = time_minutes[0]
 
         for i in range(n_steps):
+            step_minutes = dt_minutes
+            if window_end_minutes is not None:
+                step_minutes = min(dt_minutes, window_end_minutes - time_minutes[i])
+            step_hours = minutes_to_hours(step_minutes)
+
             ghi = max(ghi_data[i], 0)
             cloud = cloud_data[i]
 
@@ -64,7 +73,7 @@ class LapsRaceSimulator:
             bdr = self.physics.battery_drain_rate(speed, ghi)
 
             prev_soc = soc
-            energy_delta = (power_in - power_out) * dt_hours
+            energy_delta = (power_in - power_out) * step_hours
             next_soc = prev_soc + energy_delta / self.car.battery_capacity
 
             step_fraction = 1.0
@@ -75,13 +84,13 @@ class LapsRaceSimulator:
                     step_fraction = float(np.clip((prev_soc - self.race.min_soc) / denom, 0.0, 1.0))
                 soc = self.race.min_soc
                 completed_full_window = False
-                reached_min_soc_time_minutes = time_minutes[i] + dt_minutes * step_fraction
+                reached_min_soc_time_minutes = time_minutes[i] + step_minutes * step_fraction
             else:
                 soc = float(np.clip(next_soc, self.race.min_soc, 1.0))
 
-            distance_step = speed * minutes_to_seconds(dt_minutes) * step_fraction
+            distance_step = speed * minutes_to_seconds(step_minutes) * step_fraction
             step_start = time_minutes[i]
-            step_duration = dt_minutes * step_fraction
+            step_duration = step_minutes * step_fraction
             carry = current_lap_distance  # distance already covered on the current lap
             distance_into_step = 0.0
             total_distance += distance_step
@@ -100,14 +109,14 @@ class LapsRaceSimulator:
             soc_error = soc - ideal_soc[i]
             prev_speed = speed
             if not hit_min_soc:
-                speed = self.strategy.next_speed(i, speed, soc, soc_error, bdr, self.physics, ghi_data, dt_hours)
+                speed = self.strategy.next_speed(i, speed, soc, soc_error, bdr, self.physics, ghi_data, step_hours)
 
                 regen_wh = self.physics.regen_energy(prev_speed, speed)
                 if regen_wh > 0:
                     soc += regen_wh / self.car.battery_capacity
                     soc = min(soc, 1.0)
 
-            time_arr.append(time_minutes[i] + dt_minutes * step_fraction)
+            time_arr.append(time_minutes[i] + step_minutes * step_fraction)
             soc_arr.append(soc)
             speed_arr.append(prev_speed)
             bdr_arr.append(bdr)

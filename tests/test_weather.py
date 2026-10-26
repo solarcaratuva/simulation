@@ -7,8 +7,10 @@ import pytest
 from sim.weather import DEFAULT_SYNTHETIC_SEED, WeatherService, _moving_average
 
 
-def race(start=10.0, end=18.0):
-    return SimpleNamespace(start_time_hour=start, end_time_hour=end)
+def race(start=10.0, end=18.0, time_step_minutes=1.0):
+    return SimpleNamespace(
+        start_time_hour=start, end_time_hour=end, time_step_minutes=time_step_minutes
+    )
 
 
 @pytest.fixture
@@ -205,3 +207,36 @@ class TestSimulatorIntegration:
     def test_explicit_seed_is_reproducible(self, capsys):
         a, b = self._run(capsys, seed=3), self._run(capsys, seed=3)
         np.testing.assert_array_equal(a.soc, b.soc)
+
+
+class TestTimeStep:
+    def test_default_step_matches_one_minute_output(self, service):
+        t, g, c = service.generate_synthetic_data(race(10.0, 12.0, 1.0))
+        assert np.array_equal(t, np.arange(600, 720))
+        assert len(t) == len(g) == len(c) == 120
+
+    def test_five_minute_aggregation(self, service):
+        t1, g1, c1 = service.generate_synthetic_data(race(10.0, 12.0, 1.0))
+        t5, g5, c5 = service.generate_synthetic_data(race(10.0, 12.0, 5.0))
+        assert len(t5) == len(g5) == len(c5) == 24
+        assert np.allclose(np.diff(t5), 5.0)
+        assert t5[0] == t1[0]
+        # Coarser steps average the minutes inside each step.
+        assert np.allclose(g5, g1.reshape(24, 5).mean(axis=1))
+        assert np.allclose(c5, c1.reshape(24, 5).mean(axis=1))
+
+    def test_half_minute_interpolation(self, service):
+        t1, g1, c1 = service.generate_synthetic_data(race(10.0, 12.0, 1.0))
+        th, gh, ch = service.generate_synthetic_data(race(10.0, 12.0, 0.5))
+        assert len(th) == len(gh) == len(ch) == 240
+        assert np.allclose(np.diff(th), 0.5)
+        # Whole-minute samples are unchanged by interpolation.
+        assert np.allclose(gh[::2], g1)
+        assert np.allclose(ch[::2], c1)
+
+    @pytest.mark.parametrize("step", [0.5, 1.0, 2.0, 5.0, 15.0])
+    def test_step_is_deterministic(self, service, step):
+        a = service.generate_synthetic_data(race(9.0, 15.0, step))
+        b = service.generate_synthetic_data(race(9.0, 15.0, step))
+        for x, y in zip(a, b):
+            assert np.array_equal(x, y)

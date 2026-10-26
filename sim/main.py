@@ -27,6 +27,16 @@ from sim.plotting import SimulationPlotter, save_all_plots
 STRATEGY_OPTIONS = ["pi", "stepped", "interval-hold", "fixed"]
 
 
+def positive_float(value: str) -> float:
+    try:
+        number = float(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"invalid number: {value!r}")
+    if not number > 0 or number == float("inf"):
+        raise argparse.ArgumentTypeError("must be a finite number greater than 0")
+    return number
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Modular laps race simulator")
     try:
@@ -69,6 +79,12 @@ def parse_args():
         action="store_true",
         help="Use synthetic weather instead of calling the Open-Meteo API (offline mode)",
     )
+    parser.add_argument(
+        "--time-step-minutes",
+        type=positive_float,
+        default=1.0,
+        help="Simulation time step in minutes (default: 1.0)",
+    )
     return parser.parse_args()
 
 
@@ -106,7 +122,7 @@ def run_speed_sweep(track, car, args):
         start_soc=1.0,
         target_soc=0.10,
         aggressiveness=DEFAULT_AGGRESSIVENESS["fixed"],
-        time_step_minutes=1.0,
+        time_step_minutes=args.time_step_minutes,
         strategy="fixed",
     )
     rows = run_fixed_speed_sweep(
@@ -205,7 +221,7 @@ def main():
             aggressiveness=DEFAULT_AGGRESSIVENESS["interval-hold"],
             energy_safety_scale=1.0,
             initial_speed_mps=20.0,
-            time_step_minutes=1.0,
+            time_step_minutes=args.time_step_minutes,
             strategy="interval-hold",
         )
         fixed_speed_rows = run_fixed_speed_sweep(
@@ -272,7 +288,7 @@ def main():
         aggressiveness=aggressiveness,
         energy_safety_scale=energy_safety_scale,
         initial_speed_mps=20.0,
-        time_step_minutes=1.0,
+        time_step_minutes=args.time_step_minutes,
         strategy=selected_strategy,
     )
 

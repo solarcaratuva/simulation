@@ -24,7 +24,7 @@ class TestCSV(unittest.TestCase):
         simulator_args = []
 
         class StubSimulator:
-            def __init__(self, *, track, car, race, use_api_weather, synthetic_weather_seed):
+            def __init__(self, *, track, car, race, use_api_weather, synthetic_weather_seed=7):
                 simulator_args.append((track, car, use_api_weather))
 
             def run(self):
@@ -44,7 +44,11 @@ class TestCSV(unittest.TestCase):
         with tempfile.TemporaryDirectory() as output_dir:
             with patch("sim.planning.sweep.LapsRaceSimulator", StubSimulator):
                 with patch("sim.main.os.getcwd", return_value=output_dir):
-                    run_speed_sweep(track, car, SimpleNamespace(no_api_weather=True))
+                    run_speed_sweep(
+                        track,
+                        car,
+                        SimpleNamespace(time_step_minutes=1.0, no_api_weather=True),
+                    )
 
             csv_path = os.path.join(output_dir, "csv", "planning_report.csv")
             self.assertTrue(os.path.isfile(csv_path))
@@ -80,7 +84,7 @@ class TestCSV(unittest.TestCase):
         )
 
         class StubSimulator:
-            def __init__(self, *, track, car, race, use_api_weather, synthetic_weather_seed):
+            def __init__(self, *, track, car, race, use_api_weather, synthetic_weather_seed=7):
                 pass
 
             def run(self):
@@ -100,17 +104,18 @@ class TestCSV(unittest.TestCase):
         args = SimpleNamespace(
             plan=True,
             speed_sweep=False,
-            no_api_weather=True,
             location=track.file_path_name,
+            time_step_minutes=1.0,
+            no_api_weather=True,
         )
         with tempfile.TemporaryDirectory() as output_dir:
             with patch("sim.main.parse_args", return_value=args):
-                with patch("sim.main.get_available_tracks", return_value=[track]), \
-                        patch("sim.main.get_track_by_argument", return_value=track):
-                    with patch("sim.main.CarConfig.from_json", return_value=car):
-                        with patch("sim.planning.sweep.LapsRaceSimulator", StubSimulator):
-                            with patch("sim.main.os.getcwd", return_value=output_dir):
-                                run_main()
+                with patch("sim.main.get_available_tracks", return_value=[track]):
+                    with patch("sim.main.get_track_by_argument", return_value=track):
+                        with patch("sim.main.CarConfig.from_json", return_value=car):
+                            with patch("sim.planning.sweep.LapsRaceSimulator", StubSimulator):
+                                with patch("sim.main.os.getcwd", return_value=output_dir):
+                                    run_main()
 
             csv_path = os.path.join(output_dir, "csv", "planning_report.csv")
             self.assertTrue(os.path.isfile(csv_path))
