@@ -37,7 +37,7 @@ def run_sim(track, step, strategy="fixed", car=None, seed=1, **race_kwargs):
 
 
 # A battery big enough that the car never hits min SoC, so the whole window runs.
-BIG_BATTERY = CarConfig(battery_capacity=1_000_000)
+BIG_BATTERY = CarConfig(battery_capacity_wh=1_000_000)
 
 
 class TestResample:
@@ -384,11 +384,11 @@ class TestNonDivisibleStepsEndAtWindowEnd:
     @pytest.mark.parametrize("step", ALL_STEPS)
     def test_energy_used_is_independent_of_step(self, track, step):
         # No solar and constant speed: SoC drop is exactly power * duration / capacity.
-        car = CarConfig(battery_capacity=50_000, solar_panel_area=0)
+        car = CarConfig(battery_capacity_wh=50_000, solar_panel_area_m2=0)
         r = run_sim(track, step, car=car, fixed_speed_mps=15.0)
         from sim.physics import PhysicsEngine
         power_w = PhysicsEngine(car).power_drained(15.0)
-        expected_soc = 1.0 - power_w * (WINDOW_MINUTES / 60.0) / car.battery_capacity
+        expected_soc = 1.0 - power_w * (WINDOW_MINUTES / 60.0) / car.battery_capacity_wh
         assert r.completed_full_window
         assert r.final_soc == pytest.approx(expected_soc, abs=1e-9)
 

@@ -168,7 +168,7 @@ Vehicle parameters are loaded from:
 car_params.json
 ```
 
-Typical parameters include mass, battery capacity, solar panel area, solar panel
+Typical parameters include mass (`mass_kg`), battery capacity (`battery_capacity_wh`), solar panel area, solar panel
 efficiency, drag, rolling resistance inputs, and regenerative braking
 efficiency.
 

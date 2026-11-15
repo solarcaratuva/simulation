@@ -7,7 +7,7 @@ from sim.planning.comparison import build_comparison_row
 
 class TestComparison(unittest.TestCase):
     def test_battery_energy_calculations(self):
-        car = CarConfig(battery_capacity=5000)
+        car = CarConfig(battery_capacity_wh=5000)
         race = RaceConfig(target_soc=0.4)
         results = SimpleNamespace(
             total_laps=1,
@@ -27,7 +27,7 @@ class TestComparison(unittest.TestCase):
         self.assertAlmostEqual(row["energy_margin_wh"], 1000.0) # (0.6-0.4) * 5000 = 1000
 
     def test_positive_margin(self):
-        car = CarConfig(battery_capacity=5000)
+        car = CarConfig(battery_capacity_wh=5000)
         race = RaceConfig(target_soc=0.4)
         results = SimpleNamespace(
             total_laps=1,
@@ -47,7 +47,7 @@ class TestComparison(unittest.TestCase):
         self.assertGreater(row["energy_margin_wh"], 0)
 
     def test_negative_margin(self):
-        car = CarConfig(battery_capacity=5000)
+        car = CarConfig(battery_capacity_wh=5000)
         race = RaceConfig(target_soc=0.4)
         results = SimpleNamespace(
             total_laps=1,
@@ -67,7 +67,7 @@ class TestComparison(unittest.TestCase):
         self.assertLess(row["energy_margin_wh"], 0)
 
     def test_zero_margin(self):
-        car = CarConfig(battery_capacity=5000)
+        car = CarConfig(battery_capacity_wh=5000)
         race = RaceConfig(target_soc=0.4)
         results = SimpleNamespace(
             total_laps=1,

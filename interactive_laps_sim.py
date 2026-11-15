@@ -139,7 +139,7 @@ class InteractiveSimulator:
             power_out = self.physics.power_drained(speed)
 
             energy_delta = (power_in - power_out) * dt_hours
-            soc += energy_delta / self.car.battery_capacity
+            soc += energy_delta / self.car.battery_capacity_wh
             soc = max(soc, self.race.min_soc)
 
             dist_step = speed * (self.race.time_step_minutes * 60)
@@ -157,7 +157,7 @@ class InteractiveSimulator:
             # Apply regenerative braking energy if decelerating
             regen_wh = self.physics.regen_energy(prev_speed, speed)
             if regen_wh > 0:
-                soc += regen_wh / self.car.battery_capacity
+                soc += regen_wh / self.car.battery_capacity_wh
                 soc = min(soc, 1.0)  # Cap at 100%
 
             speeds[i] = speed

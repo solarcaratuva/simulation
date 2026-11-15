@@ -27,16 +27,32 @@ Source: `car_params.json`
 
 | Parameter | Units | Required | Affects |
 |---|---:|---|---|
-| `mass` | kg | Yes | Rolling resistance, Regen energy, total energy use |
-| `battery_capacity` | Wh | Yes | Available battery energy, SOC changes |
-| `solar_panel_area` | m² | Yes | Solar power collected |
+| `mass_kg` | kg | Yes | Rolling resistance, Regen energy, total energy use |
+| `battery_capacity_wh` | Wh | Yes | Available battery energy, SOC changes |
+| `solar_panel_area_m2` | m² | Yes | Solar power collected |
 | `solar_panel_efficiency` | fraction | Yes | Solar power collected |
 | `electrical_efficiency` | fraction | Yes | Driving power consumption |
-| `C_dA` | m² | Yes | Aerodynamic drag, energy use |
-| `tire_pressure` | pressure units | Yes | Rolling resistance,  energy use |
+| `cda_m2` | m² | Yes | Aerodynamic drag, energy use |
+| `tire_pressure_bar` | bar | Yes | Rolling resistance,  energy use |
 | `regen_efficiency` | fraction | Yes | Regen energy |
-| `rho` | kg/m³ | Yes | Aerodynamic drag |
+| `air_density_kg_per_m3` | kg/m³ | Yes | Aerodynamic drag |
 | `g` | m/s² | Yes | Rolling resistance |
+
+Tire pressure is in bar: the rolling-resistance formula in `sim/physics.py`
+(`Crr = 0.005 + (1/P)(0.01 + 0.0095(v/100)²)`) expects bar.
+
+**Migration:** parameters were renamed to include units. Old names are still
+accepted when loading JSON files (`CarConfig.from_json` and the scenario
+loader), but new files should use the new names:
+
+| Old name | New name |
+|---|---|
+| `mass` | `mass_kg` |
+| `battery_capacity` | `battery_capacity_wh` |
+| `solar_panel_area` | `solar_panel_area_m2` |
+| `C_dA` | `cda_m2` |
+| `rho` | `air_density_kg_per_m3` |
+| `tire_pressure` | `tire_pressure_bar` |
 
 ### Course Configuration
 

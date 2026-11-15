@@ -46,7 +46,7 @@ def make_simulator(lap_distance_m=1000.0, time_step_minutes=1.0,
     simulator = LapsRaceSimulator.__new__(LapsRaceSimulator)
 
     simulator.track = SimpleNamespace(lap_distance_m=lap_distance_m)
-    simulator.car = SimpleNamespace(battery_capacity=1_000_000.0)
+    simulator.car = SimpleNamespace(battery_capacity_wh=1_000_000.0)
     simulator.race = SimpleNamespace(
         time_step_minutes=time_step_minutes,
         start_soc=1.0,
