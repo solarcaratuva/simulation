@@ -7,7 +7,7 @@ import json
 from dataclasses import fields
 from typing import Dict
 
-from sim.config import CarConfig
+from sim.config import CarConfig, migrate_legacy_car_params
 
 CONSERVATIVE = "conservative"
 BASE = "base"
@@ -18,14 +18,14 @@ SCENARIOS = (CONSERVATIVE, BASE, OPTIMISTIC)
 # -1: conservative = value - uncertainty (bigger is better for performance)
 # Optimistic is always the opposite. Parameters not listed (e.g. g) are held fixed.
 CONSERVATIVE_DIRECTION: Dict[str, int] = {
-    "mass": +1,                    # heavier -> more rolling loss, more energy to accelerate
-    "C_dA": +1,                    # more drag
-    "rho": +1,                     # denser air -> more drag
-    "battery_capacity": -1,        # less usable energy
-    "solar_panel_area": -1,        # less solar power
+    "mass_kg": +1,                    # heavier -> more rolling loss, more energy to accelerate
+    "cda_m2": +1,                    # more drag
+    "air_density_kg_per_m3": +1,                     # denser air -> more drag
+    "battery_capacity_wh": -1,        # less usable energy
+    "solar_panel_area_m2": -1,        # less solar power
     "solar_panel_efficiency": -1,  # less solar power
     "electrical_efficiency": -1,   # more losses (see note below)
-    "tire_pressure": -1,           # lower pressure -> higher Crr
+    "tire_pressure_bar": -1,           # lower pressure -> higher Crr
     "regen_efficiency": -1,        # less energy recovered
 }
 # NOTE: physics.py currently multiplies drain by electrical_efficiency, so a lower
@@ -51,6 +51,7 @@ def make_scenario(params: Dict[str, dict], scenario: str) -> CarConfig:
     if scenario not in SCENARIOS:
         raise ValueError(f"unknown scenario {scenario!r}; expected one of {SCENARIOS}")
     sign = {CONSERVATIVE: +1, BASE: 0, OPTIMISTIC: -1}[scenario]
+    params = migrate_legacy_car_params(params)  # accept pre-unit-suffix names
 
     kwargs = {}
     for f in fields(CarConfig):

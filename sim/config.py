@@ -73,30 +73,56 @@ class TrackConfig:
         )
 
 
+# Old parameter names -> current unit-suffixed names. Old names are still
+# accepted when loading JSON files so existing parameter files keep working.
+LEGACY_CAR_PARAM_NAMES = {
+    "mass": "mass_kg",
+    "battery_capacity": "battery_capacity_wh",
+    "solar_panel_area": "solar_panel_area_m2",
+    "C_dA": "cda_m2",
+    "rho": "air_density_kg_per_m3",
+    "tire_pressure": "tire_pressure_bar",
+}
+
+
+def migrate_legacy_car_params(params: dict) -> dict:
+    """Return a copy of params with legacy keys renamed to the new names.
+
+    If both the old and new name are present, the new name wins.
+    """
+    migrated = {}
+    for key, value in params.items():
+        new_key = LEGACY_CAR_PARAM_NAMES.get(key, key)
+        if new_key != key and new_key in params:
+            continue
+        migrated[new_key] = value
+    return migrated
+
+
 @dataclass
 class CarConfig:
-    mass: float = 337
-    battery_capacity: float = 5000
-    solar_panel_area: float = 4
+    mass_kg: float = 337
+    battery_capacity_wh: float = 5000
+    solar_panel_area_m2: float = 4
     solar_panel_efficiency: float = 0.23
     electrical_efficiency: float = 0.99
-    C_dA: float = 0.73809
-    tire_pressure: float = 5
+    cda_m2: float = 0.73809
+    tire_pressure_bar: float = 5
     regen_efficiency: float = 0.5
-    rho: float = 1.192
+    air_density_kg_per_m3: float = 1.192
     g: float = 9.80665
 
     def __post_init__(self):
         self.validate()
 
     def validate(self):
-        if self.mass <= 0:
+        if self.mass_kg <= 0:
             raise ValueError("Mass must be greater than 0.")
-        if self.tire_pressure <= 0:
+        if self.tire_pressure_bar <= 0:
             raise ValueError("Tire pressure must be greater than 0.")
-        if self.battery_capacity <= 0:
+        if self.battery_capacity_wh <= 0:
             raise ValueError("Battery capacity must be greater than 0.")
-        if self.solar_panel_area < 0:
+        if self.solar_panel_area_m2 < 0:
             raise ValueError("Solar panel area must be non-negative.")
         if not (0 <= self.solar_panel_efficiency <= 1):
             raise ValueError("Solar panel efficiency must be between 0 and 1.")
@@ -110,20 +136,21 @@ class CarConfig:
         with open(filepath, "r") as f:
             params = json.load(f)
 
+        params = migrate_legacy_car_params(params)
         for key, value in params.items():
             if value == "inf":
                 params[key] = math.inf
 
         return cls(
-            mass=params.get("mass", 337),
-            battery_capacity=params.get("battery_capacity", 5000),
-            solar_panel_area=params.get("solar_panel_area", 4),
+            mass_kg=params.get("mass_kg", 337),
+            battery_capacity_wh=params.get("battery_capacity_wh", 5000),
+            solar_panel_area_m2=params.get("solar_panel_area_m2", 4),
             solar_panel_efficiency=params.get("solar_panel_efficiency", 0.23),
             electrical_efficiency=params.get("electrical_efficiency", 0.99),
-            C_dA=params.get("C_dA", 0.73809),
-            tire_pressure=params.get("tire_pressure", 5),
+            cda_m2=params.get("cda_m2", 0.73809),
+            tire_pressure_bar=params.get("tire_pressure_bar", 5),
             regen_efficiency=params.get("regen_efficiency", 0.5),
-            rho=params.get("rho", 1.192),
+            air_density_kg_per_m3=params.get("air_density_kg_per_m3", 1.192),
             g=params.get("g", 9.80665),
         )
 

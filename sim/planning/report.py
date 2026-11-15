@@ -27,8 +27,8 @@ def print_planning_report(
     print()
     print(f"Track: {track.name}")
     print(f"Location: {track.location}")
-    print(f"Battery capacity: {car_config.battery_capacity} Wh")
-    print(f"Target final battery energy: {car_config.battery_capacity * race_config.target_soc} Wh")
+    print(f"Battery capacity: {car_config.battery_capacity_wh} Wh")
+    print(f"Target final battery energy: {car_config.battery_capacity_wh * race_config.target_soc} Wh")
     print(f"Target final SoC: {race_config.target_soc * 100:.1f}%")
 
     print("Best Fixed Speed:")

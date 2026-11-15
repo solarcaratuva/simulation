@@ -74,7 +74,7 @@ class LapsRaceSimulator:
 
             prev_soc = soc
             energy_delta = (power_in - power_out) * step_hours
-            next_soc = prev_soc + energy_delta / self.car.battery_capacity
+            next_soc = prev_soc + energy_delta / self.car.battery_capacity_wh
 
             step_fraction = 1.0
             hit_min_soc = prev_soc > self.race.min_soc and next_soc <= self.race.min_soc
@@ -113,7 +113,7 @@ class LapsRaceSimulator:
 
                 regen_wh = self.physics.regen_energy(prev_speed, speed)
                 if regen_wh > 0:
-                    soc += regen_wh / self.car.battery_capacity
+                    soc += regen_wh / self.car.battery_capacity_wh
                     soc = min(soc, 1.0)
 
             time_arr.append(time_minutes[i] + step_minutes * step_fraction)

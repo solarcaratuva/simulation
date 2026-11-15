@@ -8,10 +8,10 @@ from sim.physics import PhysicsEngine
 
 def make_physics():
     car = CarConfig(
-        mass=337,
-        C_dA=0.73809,
-        tire_pressure=5,
-        rho=1.192,
+        mass_kg=337,
+        cda_m2=0.73809,
+        tire_pressure_bar=5,
+        air_density_kg_per_m3=1.192,
         g=9.80665,
         electrical_efficiency=0.99,
     )
@@ -73,14 +73,14 @@ def test_solar_power_scales_with_ghi():
 
 def test_solar_power_scales_with_panel_area():
     car = CarConfig(
-        solar_panel_area=4,
+        solar_panel_area_m2=4,
         solar_panel_efficiency=0.25,
     )
     physics = PhysicsEngine(car)
 
     power_at_4 = physics.solar_power(1000)
 
-    car.solar_panel_area = 8
+    car.solar_panel_area_m2 = 8
     power_at_8 = physics.solar_power(1000)
 
     assert math.isclose(power_at_8, 2 * power_at_4)
@@ -88,7 +88,7 @@ def test_solar_power_scales_with_panel_area():
 
 def test_solar_power_scales_with_panel_efficiency():
     car = CarConfig(
-        solar_panel_area=4,
+        solar_panel_area_m2=4,
         solar_panel_efficiency=0.20,
     )
     physics = PhysicsEngine(car)
@@ -103,7 +103,7 @@ def test_solar_power_scales_with_panel_efficiency():
 def test_solar_power_exact_value():
     # 1000 W/m^2 * 4 m^2 * 25% efficiency = 1000 W
     car = CarConfig(
-        solar_panel_area=4,
+        solar_panel_area_m2=4,
         solar_panel_efficiency=0.25,
     )
     physics = PhysicsEngine(car)

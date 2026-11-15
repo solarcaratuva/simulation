@@ -28,7 +28,7 @@ def compute_ideal_soc_curve(cloud_data: np.ndarray, race_config, alpha: float = 
 # Find a constant speed that consumes the total available race energy budget.
 # Used as baseline speed for SOC feedback strategies to adjust around.
 def solve_optimal_constant_speed(physics, race_config: RaceConfig, ghi_data: np.ndarray, dt_hours: float) -> float:
-    cap = physics.car.battery_capacity
+    cap = physics.car.battery_capacity_wh
     usable_energy = (race_config.start_soc - race_config.target_soc) * cap
     total_solar = np.sum(physics.solar_power(ghi_data)) * dt_hours
     total_available = usable_energy + total_solar
@@ -136,7 +136,7 @@ class IntervalHoldStrategy(BaseStrategy):
 
     # Remaining budget = usable battery above target SOC + expected solar input.
     def _solve_remaining_speed(self, current_soc: float, physics, ghi_remaining: np.ndarray, dt_hours: float) -> float:
-        cap = physics.car.battery_capacity
+        cap = physics.car.battery_capacity_wh
         usable_energy = max(0.0, (current_soc - self.config.target_soc) * cap)
         solar_energy = np.sum(physics.solar_power(ghi_remaining)) * dt_hours
         total_available = usable_energy + solar_energy

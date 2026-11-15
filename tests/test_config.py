@@ -5,13 +5,13 @@ from sim.config import CarConfig, RaceConfig, TrackConfig
 
 def test_invalid_car_config():
     with pytest.raises(ValueError, match="Battery capacity must be greater than 0."):
-        CarConfig(battery_capacity=0, mass=1000, solar_panel_area=1, solar_panel_efficiency=0.2, electrical_efficiency=0.9, regen_efficiency=0.8)
+        CarConfig(battery_capacity_wh=0, mass_kg=1000, solar_panel_area_m2=1, solar_panel_efficiency=0.2, electrical_efficiency=0.9, regen_efficiency=0.8)
 
     with pytest.raises(ValueError, match="Mass must be greater than 0."):
-        CarConfig(battery_capacity=50, mass=0, solar_panel_area=1, solar_panel_efficiency=0.2, electrical_efficiency=0.9, regen_efficiency=0.8)
+        CarConfig(battery_capacity_wh=50, mass_kg=0, solar_panel_area_m2=1, solar_panel_efficiency=0.2, electrical_efficiency=0.9, regen_efficiency=0.8)
 
     with pytest.raises(ValueError, match="Tire pressure must be greater than 0."):
-        CarConfig(tire_pressure=0)
+        CarConfig(tire_pressure_bar=0)
 
 def test_invalid_race_config():
     with pytest.raises(ValueError, match="Start SOC must be between 0 and 1."):
@@ -35,3 +35,18 @@ def test_invalid_track_config():
             lap_distance_m=0,
             timezone="UTC",
         )
+
+
+def test_from_json_accepts_legacy_names(tmp_path):
+    import json
+    legacy = {"mass": 300, "battery_capacity": 4000, "solar_panel_area": 3,
+              "C_dA": 0.5, "rho": 1.1, "tire_pressure": 4}
+    path = tmp_path / "legacy.json"
+    path.write_text(json.dumps(legacy))
+    car = CarConfig.from_json(str(path))
+    assert car.mass_kg == 300
+    assert car.battery_capacity_wh == 4000
+    assert car.solar_panel_area_m2 == 3
+    assert car.cda_m2 == 0.5
+    assert car.air_density_kg_per_m3 == 1.1
+    assert car.tire_pressure_bar == 4
