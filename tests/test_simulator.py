@@ -20,7 +20,7 @@ class FakePhysics:
 
 
 class FakeWeather:
-    def generate_synthetic_data(self, race):
+    def generate_synthetic_data(self, race, seed=None):
         return (
             np.array([0.0, 1.0]),
             np.array([0.0, 0.0]),
@@ -54,6 +54,7 @@ def make_simulator(lap_distance_m=1000.0, time_step_minutes=1.0,
         strategy="test",
     )
     simulator.use_api_weather = False
+    simulator.synthetic_weather_seed = 7
     simulator.physics = FakePhysics()
     simulator.weather = FakeWeather()
     simulator.strategy = FakeStrategy(optimal_speed)

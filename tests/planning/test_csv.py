@@ -24,7 +24,7 @@ class TestCSV(unittest.TestCase):
         simulator_args = []
 
         class StubSimulator:
-            def __init__(self, *, track, car, race, use_api_weather):
+            def __init__(self, *, track, car, race, use_api_weather, synthetic_weather_seed=7):
                 simulator_args.append((track, car, use_api_weather))
 
             def run(self):
@@ -84,7 +84,7 @@ class TestCSV(unittest.TestCase):
         )
 
         class StubSimulator:
-            def __init__(self, *, track, car, race, use_api_weather):
+            def __init__(self, *, track, car, race, use_api_weather, synthetic_weather_seed=7):
                 pass
 
             def run(self):

@@ -1,17 +1,18 @@
 from sim.config import SimulationResults
 from sim.physics import PhysicsEngine
-from sim.weather import WeatherService
+from sim.weather import DEFAULT_SYNTHETIC_SEED, WeatherService
 from sim.controllers import build_strategy
 from sim.units import minutes_to_hours, minutes_to_seconds, mps_to_mph
 import numpy as np
 
 
 class LapsRaceSimulator:
-    def __init__(self, track, car, race, use_api_weather=True):
+    def __init__(self, track, car, race, use_api_weather=True, synthetic_weather_seed=DEFAULT_SYNTHETIC_SEED):
         self.track = track
         self.car = car
         self.race = race
         self.use_api_weather = use_api_weather
+        self.synthetic_weather_seed = synthetic_weather_seed
 
         self.physics = PhysicsEngine(self.car)
         self.weather = WeatherService(self.track)
@@ -23,9 +24,9 @@ class LapsRaceSimulator:
                 time_minutes, ghi_data, cloud_data = self.weather.fetch_weather_data(self.race)
             except Exception as e:
                 print(f"Warning: API fetch failed ({e}), using synthetic data")
-                time_minutes, ghi_data, cloud_data = self.weather.generate_synthetic_data(self.race)
+                time_minutes, ghi_data, cloud_data = self.weather.generate_synthetic_data(self.race, self.synthetic_weather_seed)
         else:
-            time_minutes, ghi_data, cloud_data = self.weather.generate_synthetic_data(self.race)
+            time_minutes, ghi_data, cloud_data = self.weather.generate_synthetic_data(self.race, self.synthetic_weather_seed)
 
         dt_minutes = self.race.time_step_minutes
         dt_hours = minutes_to_hours(dt_minutes)
